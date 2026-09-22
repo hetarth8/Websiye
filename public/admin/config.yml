@@ -9,7 +9,7 @@
 
 backend:
   name: github
-  repo: REPO_OWNER/REPO_NAME # <-- CHANGE ME
+  repo: hetarth8/Websiye
   branch: main
 
 # Lets you preview the CMS locally with `npx decap-server` before it is live.
