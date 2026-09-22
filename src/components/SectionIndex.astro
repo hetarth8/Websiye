@@ -1,0 +1,61 @@
+---
+/**
+ * The page's section rail — the site's distinctive navigation.
+ *
+ * A fixed column of ticks down the right edge. At rest it is just marks; the
+ * label for a section appears when it is active or hovered, and clicking jumps
+ * to it. It gives a long single-page scroll a sense of place, which a normal
+ * top nav cannot do.
+ *
+ * Desktop only (xl and up) — on a phone it would compete with the content, and
+ * the header menu already covers navigation there.
+ */
+
+interface Props {
+  /** Ordered [id, label] pairs matching the section ids on the page. */
+  sections: Array<{ id: string; label: string }>;
+}
+
+const { sections } = Astro.props;
+---
+
+<nav class="section-index" aria-label="Page sections" data-section-index>
+  {
+    sections.map((s, i) => (
+      <a href={`#${s.id}`} data-index-link={s.id} aria-current={i === 0 ? 'true' : 'false'}>
+        <span>{s.label}</span>
+      </a>
+    ))
+  }
+</nav>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-section-index]');
+  if (nav) {
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>('[data-index-link]')];
+    const targets = links
+      .map((link) => document.getElementById(link.dataset.indexLink ?? ''))
+      .filter((el): el is HTMLElement => Boolean(el));
+
+    if (!targets.length) {
+      nav.remove();
+    } else {
+      const mark = (id: string) =>
+        links.forEach((l) => l.setAttribute('aria-current', String(l.dataset.indexLink === id)));
+
+      // The section occupying the middle of the viewport is the active one,
+      // which matches what the reader is actually looking at.
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (visible) mark(visible.target.id);
+        },
+        { rootMargin: '-45% 0px -45% 0px', threshold: [0, 0.25, 0.5, 1] },
+      );
+
+      targets.forEach((t) => observer.observe(t));
+    }
+  }
+</script>

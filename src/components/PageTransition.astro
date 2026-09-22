@@ -1,0 +1,524 @@
+---
+/**
+ * Page transition overlay.
+ *
+ * `world` (the default): leaving a page opens a portal into the city from the
+ * point that was clicked, and the camera surges down the road. The browser's
+ * cross-document View Transition then carries that forward motion into the
+ * next page — the old frame pushes past as the new one settles — so moving
+ * between pages reads as travelling on through one continuous development.
+ * Arrival needs no second cover, which is what removes the flash of new
+ * content that a cover-on-arrival overlay cannot avoid without inline script.
+ *
+ * `crane`, `truck` and `sweep` are the earlier variants, still selectable in
+ * site.json.
+ *
+ * Crane, for reference — tower crane.
+ *
+ * Composition, all anchored off the viewport centre line:
+ *   .mast  vertical lattice, tiled so it reaches the bottom of any screen
+ *          without the bracing angles distorting;
+ *   .head  counter-jib + counterweight, A-frame apex, pendant ties, jib, and
+ *          the trolley — drawn with the trolley exactly on the viewBox's right
+ *          edge and anchored `right: 50%`, so the rope lines up at every
+ *          screen size rather than only at one width;
+ *   .line  rope + hook block, inside the panel so they travel with the load.
+ *
+ * The rig sits above the panel in the stacking order, so the crane always
+ * reads as being in front of the sheet it is carrying.
+ *
+ * Durations must stay in step with TIMING in src/scripts/transitions.ts.
+ * With JavaScript off, or reduced motion requested, none of this appears.
+ */
+interface Props {
+  variant?: 'sweep' | 'truck' | 'crane' | 'world';
+}
+
+const { variant = 'world' } = Astro.props;
+---
+
+<div data-transition data-variant={variant} data-state="idle" aria-hidden="true">
+  {
+    variant === 'world' && (
+      <div class="world">
+        <canvas class="terrain" data-terrain="travel" />
+        <span class="world__veil" />
+        <span class="world__badge">
+          <img src="/logo/aht-mark.svg" alt="" width="56" height="56" />
+        </span>
+      </div>
+    )
+  }
+  <div class="rig">
+    <!-- Vertical mast. One lattice bay tiled downwards. -->
+    <svg class="mast" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+      <defs>
+        <pattern id="aht-mast-bay" width="60" height="76" patternUnits="userSpaceOnUse">
+          <!-- Chords -->
+          <rect x="3" y="0" width="8" height="76" fill="var(--color-amber-600)"></rect>
+          <rect x="49" y="0" width="8" height="76" fill="var(--color-amber-500)"></rect>
+          <!-- Cross bracing -->
+          <path
+            d="M9 2 51 74M51 2 9 74"
+            stroke="var(--color-amber-500)"
+            stroke-width="5"
+            fill="none"></path>
+          <!-- Horizontal tie -->
+          <rect x="3" y="0" width="54" height="6" fill="var(--color-amber-600)"></rect>
+        </pattern>
+      </defs>
+      <rect width="60" height="100%" fill="url(#aht-mast-bay)"></rect>
+    </svg>
+
+    <!-- Jib assembly. Trolley sits on the right edge of the viewBox. -->
+    <svg class="head" viewBox="0 0 1000 300" overflow="visible" aria-hidden="true">
+      <!-- Counterweight -->
+      <rect x="8" y="150" width="86" height="54" rx="5" fill="var(--color-ink-900)"></rect>
+      <rect x="8" y="150" width="86" height="9" rx="4" fill="var(--color-ink-700)"></rect>
+
+      <!-- Counter-jib -->
+      <g stroke="var(--color-amber-500)" fill="none" stroke-linecap="round">
+        <path d="M86 160h224" stroke-width="10"></path>
+        <path d="M86 196h224" stroke-width="10"></path>
+        <path d="M96 196 140 160 184 196 228 160 272 196 306 160" stroke-width="5"></path>
+      </g>
+
+      <!-- A-frame apex -->
+      <g stroke="var(--color-amber-500)" fill="none" stroke-linecap="round">
+        <path d="M252 158 296 34 342 158" stroke-width="9"></path>
+        <path d="M272 100h48" stroke-width="5"></path>
+      </g>
+
+      <!-- Pendant tie bars: apex to jib, and apex to counter-jib -->
+      <g stroke="var(--color-amber-600)" fill="none" stroke-linecap="round">
+        <path d="M296 40 620 156" stroke-width="4.5"></path>
+        <path d="M296 40 960 152" stroke-width="4.5"></path>
+        <path d="M296 40 96 156" stroke-width="4.5"></path>
+      </g>
+
+      <!-- Mast head collar, where the tower meets the jib -->
+      <rect x="266" y="150" width="60" height="58" fill="var(--color-amber-600)"></rect>
+
+      <!-- Main jib, tapering towards the tip -->
+      <g stroke="var(--color-amber-500)" fill="none" stroke-linecap="round">
+        <path d="M300 156h700" stroke-width="10"></path>
+        <path d="M300 208h700" stroke-width="10"></path>
+        <path
+          d="M312 208 366 156 420 208 474 156 528 208 582 156 636 208 690 156 744 208 798 156 852 208 906 156 960 208 1000 168"
+          stroke-width="5"></path>
+        <path d="M420 156v52M636 156v52M852 156v52" stroke-width="3.5"></path>
+      </g>
+
+      <!-- Trolley, centred on the viewBox right edge so the rope aligns -->
+      <g>
+        <rect x="964" y="196" width="72" height="26" rx="5" fill="var(--color-ink-900)"></rect>
+        <circle cx="978" cy="196" r="9" fill="var(--color-amber-600)"></circle>
+        <circle cx="1022" cy="196" r="9" fill="var(--color-amber-600)"></circle>
+        <circle cx="1000" cy="220" r="10" fill="none" stroke="var(--color-ink-900)" stroke-width="5"
+        ></circle>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Rope and hook live outside the panel, in a wrapper clipped at the
+       trolley, so the rope visibly starts at the crane instead of running off
+       the top of the screen. The line carries the same transform and timing as
+       the panel, so hook and sheet rise as one. -->
+  <div class="hoist">
+    <div class="line">
+      <span class="rope"></span>
+      <svg class="hook" viewBox="0 0 64 104" aria-hidden="true">
+        <defs>
+          <pattern
+            id="aht-hazard"
+            width="16"
+            height="16"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
+          >
+            <rect width="16" height="16" fill="#141414"></rect>
+            <rect width="8" height="16" fill="#f2c200"></rect>
+          </pattern>
+        </defs>
+        <!-- Becket and swivel -->
+        <path d="M32 0v10" stroke="#141414" stroke-width="5"></path>
+        <circle cx="32" cy="14" r="6" fill="none" stroke="#141414" stroke-width="4"></circle>
+        <!-- Hazard-banded block -->
+        <rect
+          x="8"
+          y="20"
+          width="48"
+          height="30"
+          rx="4"
+          fill="url(#aht-hazard)"
+          stroke="#141414"
+          stroke-width="3"></rect>
+        <!-- Shank and hook -->
+        <path d="M32 50v18" stroke="#141414" stroke-width="7" stroke-linecap="round"></path>
+        <path
+          d="M32 68c-13 0-13 19 0 19s13-13 3-13"
+          fill="none"
+          stroke="#141414"
+          stroke-width="7"
+          stroke-linecap="round"></path>
+      </svg>
+    </div>
+  </div>
+
+  <div class="panel" data-transition-panel>
+    <!-- Tipper silhouette, used by the sweep and truck variants only. -->
+    <svg class="vehicle" viewBox="0 0 130 62" fill="currentColor" aria-hidden="true">
+      <path d="M8 14h50l6 24H4z"></path>
+      <path d="M70 20h20l12 12v6H70z"></path>
+      <rect x="4" y="38" width="104" height="5" rx="2"></rect>
+      <circle cx="26" cy="49" r="7"></circle>
+      <circle cx="82" cy="49" r="7"></circle>
+      <circle cx="100" cy="49" r="7"></circle>
+    </svg>
+  </div>
+</div>
+
+<style>
+  [data-transition] {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    pointer-events: none;
+    visibility: hidden;
+
+    /* Distance from the mast centre to the trolley. Everything else is
+       derived from it, so the crane rescales as one piece. */
+    --jib: min(320px, 33vw);
+    --counter: calc(var(--jib) * 0.42);
+    --rig-top: clamp(10px, 3.5vh, 44px);
+
+    /* Screen y of the trolley sheave. The head SVG is 1000×300 and the sheave
+       sits at y=220, so it lands 220/300 of the way down a box whose height is
+       0.3 × (jib + counter) — which reduces to 0.312 × jib. */
+    --trolley-y: calc(var(--rig-top) + var(--jib) * 0.312);
+    /* Where the hook hangs when the sheet is down. */
+    --hook-y: clamp(240px, 48vh, 470px);
+    /* One travel distance shared by the sheet and the hook, so they move as a
+       single object. Not a percentage: the two have different heights. */
+    --lift: -101vh;
+  }
+
+  [data-transition]:not([data-state='idle']) {
+    visibility: visible;
+  }
+
+  [data-transition][data-state='covering'] {
+    pointer-events: auto;
+  }
+
+  .panel {
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-amber-500);
+    color: var(--color-ink-950);
+    will-change: transform;
+  }
+
+  .rig,
+  .vehicle,
+  .hoist,
+  .world {
+    display: none;
+  }
+
+  /* ---------------------------------------------------------------- world */
+  /* The panel is not used: the city IS the cover. */
+  [data-variant='world'] .panel {
+    display: none;
+  }
+
+  [data-variant='world'] .world {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-concrete);
+    /* A portal from the click point; transitions.ts writes --tx / --ty. */
+    clip-path: circle(0% at var(--tx, 50%) var(--ty, 55%));
+  }
+
+  [data-variant='world'][data-state='covering'] .world {
+    clip-path: circle(150% at var(--tx, 50%) var(--ty, 55%));
+    transition: clip-path 460ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  /* Lightens toward the edges so the centre of the road reads as the way on. */
+  .world__veil {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 62% 58% at 50% 55%,
+      rgb(255 255 255 / 0) 0%,
+      rgb(255 255 255 / 0.3) 70%,
+      rgb(255 255 255 / 0.72) 100%
+    );
+  }
+
+  /* The mark rides the surge on a small glass lens. */
+  .world__badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6.5rem;
+    height: 6.5rem;
+    margin: -3.25rem 0 0 -3.25rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 0.85);
+    background:
+      radial-gradient(110% 80% at 28% 16%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0) 46%),
+      radial-gradient(circle, rgb(255 255 255 / 0.6), rgb(243 234 218 / 0.5));
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    backdrop-filter: blur(16px) saturate(1.6);
+    box-shadow:
+      inset 0 -18px 34px -22px rgb(99 72 41 / 0.4),
+      0 24px 60px -24px rgb(22 24 28 / 0.55);
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .world__badge img {
+    width: 52%;
+    height: auto;
+  }
+
+  [data-variant='world'][data-state='covering'] .world__badge {
+    opacity: 1;
+    transform: scale(1);
+    transition:
+      opacity 300ms ease-out 140ms,
+      transform 520ms cubic-bezier(0.2, 0, 0, 1) 140ms;
+  }
+
+  /* ---------------------------------------------------------------- sweep */
+  [data-variant='sweep'] .panel {
+    transform: translate3d(-101%, 0, 0);
+  }
+
+  [data-variant='sweep'] .vehicle {
+    display: block;
+    position: absolute;
+    right: 2.5rem;
+    bottom: 12%;
+    width: clamp(90px, 13vw, 170px);
+  }
+
+  [data-variant='sweep'][data-state='covering'] .panel {
+    transform: translate3d(0, 0, 0);
+    transition: transform 380ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  [data-variant='sweep'][data-state='revealing'] .panel {
+    transform: translate3d(101%, 0, 0);
+    transition: transform 460ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  /* ---------------------------------------------------------------- truck */
+  [data-variant='truck'] .panel {
+    background-color: var(--color-ink-950);
+    color: var(--color-amber-500);
+    opacity: 0;
+  }
+
+  [data-variant='truck'] .vehicle {
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 14%;
+    width: clamp(140px, 22vw, 300px);
+    transform: translate3d(-120%, 0, 0);
+  }
+
+  [data-variant='truck'][data-state='covering'] .panel {
+    opacity: 1;
+    transition: opacity 280ms ease-out;
+  }
+
+  [data-variant='truck'][data-state='covering'] .vehicle {
+    transform: translate3d(45vw, 0, 0);
+    transition: transform 420ms cubic-bezier(0.4, 0, 0.6, 1);
+  }
+
+  [data-variant='truck'][data-state='revealing'] .panel {
+    opacity: 0;
+    transition: opacity 380ms ease-in 120ms;
+  }
+
+  [data-variant='truck'][data-state='revealing'] .vehicle {
+    transform: translate3d(120vw, 0, 0);
+    transition: transform 500ms cubic-bezier(0.4, 0, 0.6, 1);
+  }
+
+  /* ---------------------------------------------------------------- crane */
+  [data-variant='crane'] .panel {
+    background-color: #ffffff;
+    transform: translate3d(0, var(--lift), 0);
+    box-shadow: 0 26px 80px rgb(0 0 0 / 0.24);
+  }
+
+  /* An amber lip along the lifted edge — the sheet reads as a made object
+     rather than a plain white rectangle. */
+  [data-variant='crane'] .panel::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-amber-500) 22%,
+      var(--color-amber-500) 78%,
+      transparent
+    );
+  }
+
+  /* Dotted rows in a very light grey, plus barely-there shading. Gives the
+     sheet the ribbed read of a roller shutter instead of a blank rectangle. */
+  [data-variant='crane'] .panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgb(10 10 10 / 0.07) 1.2px, transparent 1.3px),
+      radial-gradient(130% 70% at 50% 0%, rgb(0 0 0 / 0.055), transparent 62%);
+    background-size:
+      11px 30px,
+      100% 100%;
+  }
+
+  [data-variant='crane'] .rig {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  [data-variant='crane'] .mast {
+    position: absolute;
+    /* Centred on the mast collar in .head, which sits --jib to the left of
+       the centre line. 30px is half the 60-wide pattern bay. */
+    left: calc(50% - var(--jib) - 30px);
+    /* Starts slightly under the jib so the collar covers the join. */
+    top: calc(var(--rig-top) + var(--jib) * 0.1);
+    width: 60px;
+    height: 100%;
+    filter: drop-shadow(0 4px 12px rgb(0 0 0 / 0.22));
+  }
+
+  [data-variant='crane'] .head {
+    position: absolute;
+    top: var(--rig-top);
+    /* Trolley is on the viewBox's right edge, so anchoring that edge to the
+       centre line aligns it with the rope at any width — no magic offsets. */
+    right: 50%;
+    width: calc(var(--jib) + var(--counter));
+    height: auto;
+    filter: drop-shadow(0 8px 18px rgb(0 0 0 / 0.28));
+  }
+
+  /* Clipped to start exactly at the trolley, so the rope emerges from the
+     crane rather than from the edge of the screen. It also swallows the hook
+     once that reaches the sheave, which is what happens on a real hoist. */
+  [data-variant='crane'] .hoist {
+    display: block;
+    position: absolute;
+    top: var(--trolley-y);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  /* Zero-size anchor at the hook's attachment point. */
+  [data-variant='crane'] .line {
+    position: absolute;
+    left: 50%;
+    width: 0;
+    top: calc(var(--hook-y) - var(--trolley-y));
+    transform: translate3d(0, var(--lift), 0);
+    will-change: transform;
+  }
+
+  /* Long enough to always reach the clip edge; the visible run is whatever
+     falls between the trolley and the hook, so it shortens as the load rises. */
+  [data-variant='crane'] .rope {
+    position: absolute;
+    bottom: -6px;
+    left: -2.5px;
+    width: 5px;
+    height: 300vh;
+    background: linear-gradient(
+      to right,
+      #101010 0%,
+      #3d3d3d 30%,
+      #7a7a7a 50%,
+      #3d3d3d 70%,
+      #101010 100%
+    );
+    box-shadow: 0 0 6px rgb(0 0 0 / 0.35);
+  }
+
+  [data-variant='crane'] .hook {
+    position: absolute;
+    top: 0;
+    left: -31px;
+    width: 62px;
+    filter: drop-shadow(0 5px 12px rgb(0 0 0 / 0.35));
+  }
+
+  /* Sheet and hook share one transform and one transition, so they travel as
+     a single rigged object rather than two things that merely look similar. */
+  [data-variant='crane'][data-state='covering'] .panel,
+  [data-variant='crane'][data-state='covering'] .line {
+    transform: translate3d(0, 0, 0);
+    transition: transform 520ms cubic-bezier(0.33, 0, 0.2, 1);
+  }
+
+  /* The load settles onto its slings as it lands. */
+  [data-variant='crane'][data-state='covering'] .hook {
+    animation: aht-settle 640ms cubic-bezier(0.33, 0, 0.2, 1);
+  }
+
+  /* The whole apparatus leaves together on the hoist — sheet, hook AND the
+     crane itself. Previously the mast and jib stayed put while only the sheet
+     rose, so the crane hung over the new page for the entire hoist. Lifting the
+     rig out with the load means nothing is left on screen once the reveal ends. */
+  [data-variant='crane'][data-state='revealing'] .panel,
+  [data-variant='crane'][data-state='revealing'] .line {
+    transform: translate3d(0, var(--lift), 0);
+    transition: transform 1000ms cubic-bezier(0.5, 0, 0.25, 1);
+  }
+
+  [data-variant='crane'][data-state='revealing'] .rig {
+    /* -118% clears the mast's full height off the top. Starts a touch sooner
+       and moves a touch faster than the sheet, so the crane is gone first and
+       the last of the reveal is a clean, unobstructed page. */
+    transform: translate3d(0, -118%, 0);
+    transition: transform 820ms cubic-bezier(0.6, 0, 0.3, 1);
+  }
+
+  @keyframes aht-settle {
+    0% {
+      transform: translateY(-7px);
+    }
+    58% {
+      transform: translateY(3px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-transition] {
+      display: none;
+    }
+  }
+</style>

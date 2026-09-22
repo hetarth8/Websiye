@@ -1,0 +1,25 @@
+---
+/**
+ * A side-on view into the city, between two sections.
+ *
+ * The hero, the dark band and the subpage headers each look DOWN the road. These
+ * interludes look ACROSS it, at the plots on the far side, so as the page
+ * scrolls the street slides past like the view from a car window — the same
+ * city, seen from the road it is built along. Each one is anchored to a
+ * district, and they are placed in journey order down the home page.
+ *
+ * Purely decorative: no text sits on it, so it can never cost a line its
+ * contrast, and it is hidden from assistive technology and from print.
+ */
+import type { DistrictId } from '../scripts/world/types';
+
+interface Props {
+  district: DistrictId;
+}
+
+const { district } = Astro.props;
+---
+
+<div class="world-strip" aria-hidden="true">
+  <canvas class="terrain terrain--strip" data-terrain="strip" data-world-district={district}></canvas>
+</div>

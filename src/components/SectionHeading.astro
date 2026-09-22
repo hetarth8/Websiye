@@ -1,0 +1,44 @@
+---
+/**
+ * The opening of a section, as a drawing-sheet title block.
+ *
+ * This used to be an eyebrow, an oversized heading and a paragraph stacked in a
+ * single left-hand column, which left the right half of every section empty.
+ * The owner's note was that the site "looks so cheap" and that changing the
+ * background colour was not enough — and they were right: the emptiness was
+ * structural, not chromatic. A huge word floating in dead air is what a
+ * template looks like.
+ *
+ * Now the section opens ruled: a hard line across the measure, the designation
+ * sitting on that line, and the heading and lead side by side underneath so
+ * both columns carry weight. See `.title-block` in global.css.
+ *
+ * `meta` is the optional right-hand cell of the rule — the place for a count, a
+ * date range or a location list. It is deliberately optional: a title block
+ * with an empty cell is still a title block, but a fabricated one would not be.
+ */
+interface Props {
+  eyebrow: string;
+  title: string;
+  lead?: string;
+  /** Optional right-hand cell on the rule, e.g. "07 divisions". */
+  meta?: string;
+  /** Describes the TEXT, not the ground: 'light' text sits on the steel plate. */
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+
+const { eyebrow, title, lead, meta, tone = 'dark', class: className = '' } = Astro.props;
+---
+
+<div class:list={['title-block', tone === 'light' && 'title-block--light', className]} data-reveal>
+  <div class="title-block__bar">
+    <span>{eyebrow}</span>
+    {meta && <span class="title-block__meta">{meta}</span>}
+  </div>
+
+  <div class="title-block__body">
+    <h2 class="title-block__title">{title}</h2>
+    {lead && <p class="title-block__lead">{lead}</p>}
+  </div>
+</div>

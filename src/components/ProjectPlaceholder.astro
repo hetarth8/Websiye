@@ -1,0 +1,165 @@
+---
+/**
+ * The picture for a project that has no photograph yet: an architectural line
+ * drawing of its TYPE — a portal-frame shed, a tower on a podium, a pair of
+ * bungalows, a campus block, a highway — on a drafting-sheet ground.
+ *
+ * It replaces a logo on a gradient, which read as "image missing". A drawing
+ * reads as intent, and it never claims to show the actual building: it is the
+ * type, drawn, until the owner uploads the real photograph in /admin.
+ *
+ * Pure inline SVG with presentation attributes (no style attributes, which
+ * the CSP would drop). It fills its frame; the frame sets the aspect ratio.
+ */
+interface Props {
+  category: 'road' | 'industrial' | 'commercial' | 'residential' | 'institutional';
+  class?: string;
+  /** 'slice' fills a card's frame; 'meet' shows the whole drawing (a project page). */
+  fit?: 'slice' | 'meet';
+}
+const { category, class: className = '', fit = 'slice' } = Astro.props;
+
+const INK = '#2a2d31';
+const BRONZE = '#a88450';
+const uid = `pp-${category}-${Math.random().toString(36).slice(2, 7)}`;
+
+// Evenly spaced values between a and b, n of them (exclusive of the ends).
+const between = (a: number, b: number, n: number) => Array.from({ length: n }, (_, i) => a + ((b - a) * (i + 1)) / (n + 1));
+---
+
+<svg
+  class:list={['block h-full w-full', className]}
+  viewBox="0 0 480 300"
+  preserveAspectRatio={`xMidYMid ${fit}`}
+  role="img"
+  aria-label={`Architectural drawing: ${category} project`}
+>
+  <defs>
+    <pattern id={`${uid}-grid`} width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke={INK} stroke-opacity="0.06" stroke-width="1" />
+    </pattern>
+    <linearGradient id={`${uid}-sky`} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7f5f0" />
+      <stop offset="1" stop-color="#e8e3d9" />
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="300" fill={`url(#${uid}-sky)`} />
+  <rect width="480" height="300" fill={`url(#${uid}-grid)`} />
+  {category !== 'road' && <line x1="0" y1="236" x2="480" y2="236" stroke={INK} stroke-opacity="0.35" stroke-width="1.2" />}
+
+  <g fill="none" stroke={INK} stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+    {
+      category === 'industrial' && (
+        <>
+          {/* A PEB shed: gable end with its portal frame, clad side wall
+              running back, a roller shutter, a stack and a silo. */}
+          <path d="M92 236V146l78-34 78 34v90Z" fill="#fbfaf7" />
+          <path d="M248 146l168-22v104l-168 8" fill="#efebe3" />
+          <path d="M170 112l166-25 80 37" />
+          {between(248, 416, 9).map((x) => (
+            <line x1={x} y1={146 - ((x - 248) / 168) * 22} x2={x} y2={236 - ((x - 248) / 168) * 8} stroke-opacity="0.35" stroke-width="1" />
+          ))}
+          <path d="M132 236V129M208 236V129" stroke-opacity="0.45" />
+          <path d="M146 236v-54h48v54" fill="#e2dcd1" />
+          {between(182, 236, 6).map((y) => <line x1="146" y1={y} x2="194" y2={y} stroke-opacity="0.35" stroke-width="1" />)}
+          <path d="M58 236V104h14v132" fill="#fbfaf7" />
+          <path d="M428 236v-84a16 6 0 0 1 32 0v84" fill="#fbfaf7" />
+          <ellipse cx="444" cy="152" rx="16" ry="6" />
+          <path d="M92 146l78-34 78 34" stroke={BRONZE} stroke-width="2" />
+        </>
+      )
+    }
+    {
+      category === 'commercial' && (
+        <>
+          {/* A glazed tower on a podium, with a lower block beside it. */}
+          <path d="M178 236V52h92v184" fill="#fbfaf7" />
+          <path d="M270 52l52 18v166h-52" fill="#e8e3d9" />
+          {between(52, 236, 13).map((y) => (
+            <>
+              <line x1="178" y1={y} x2="270" y2={y} stroke-opacity="0.3" stroke-width="1" />
+              <line x1="270" y1={y} x2="322" y2={y + 18 * (1 - (y - 52) / 184)} stroke-opacity="0.22" stroke-width="1" />
+            </>
+          ))}
+          {between(178, 270, 5).map((x) => <line x1={x} y1="52" x2={x} y2="236" stroke-opacity="0.2" stroke-width="1" />)}
+          <path d="M104 236V124h66v112" fill="#fbfaf7" />
+          {between(124, 236, 6).map((y) => <line x1="104" y1={y} x2="170" y2={y} stroke-opacity="0.3" stroke-width="1" />)}
+          <path d="M136 236v-44h210v44" fill="#efebe3" />
+          <path d="M136 192h210" stroke={BRONZE} stroke-width="2" />
+          <path d="M178 52h92l52 18" stroke={BRONZE} stroke-width="1.6" />
+        </>
+      )
+    }
+    {
+      category === 'residential' && (
+        <>
+          {/* Two bungalows with pitched roofs, windows, doors and a tree. */}
+          <path d="M72 236v-66h128v66" fill="#fbfaf7" />
+          <path d="M60 172l76-50 76 50" fill="#e2dcd1" />
+          <path d="M92 192h28v22H92ZM150 192h28v22h-28Z" fill="#e8e3d9" />
+          <path d="M124 236v-30h22v30" />
+          <path d="M252 236v-56h116v56" fill="#fbfaf7" />
+          <path d="M240 182l70-44 70 44" fill="#e2dcd1" />
+          <path d="M268 198h26v20h-26ZM326 198h26v20h-26Z" fill="#e8e3d9" />
+          <path d="M300 236v-26h20v26" />
+          <path d="M60 172l76-50 76 50M240 182l70-44 70 44" stroke={BRONZE} stroke-width="2" />
+          <circle cx="418" cy="190" r="22" fill="#e7ece5" />
+          <path d="M418 212v24" />
+          <path d="M20 236v-14M40 236v-14M20 226h30" stroke-opacity="0.35" />
+        </>
+      )
+    }
+    {
+      category === 'institutional' && (
+        <>
+          {/* A campus block: a long colonnade, a raised entrance, a flag. */}
+          <path d="M64 236V144h352v92" fill="#fbfaf7" />
+          <path d="M56 144h368" stroke={BRONZE} stroke-width="2.2" />
+          {between(64, 416, 13).map((x) => <line x1={x} y1="196" x2={x} y2="236" stroke-opacity="0.45" />)}
+          <path d="M64 196h352" stroke-opacity="0.45" />
+          {between(64, 416, 13).map((x) => <rect x={x - 7} y="158" width="14" height="22" fill="#e8e3d9" stroke-opacity="0.4" stroke-width="1" />)}
+          <path d="M200 144v-30h80v30" fill="#efebe3" />
+          <path d="M192 114h96" stroke={BRONZE} stroke-width="2" />
+          <path d="M440 236V96" />
+          <path d="M440 98h24v14h-24" fill="#e2dcd1" />
+        </>
+      )
+    }
+    {
+      category === 'road' && (
+        <>
+          {/* A highway in perspective: carriageway, bronze edges, the
+              dashed centre line and street lights receding to the horizon. */}
+          <path d="M0 132h480" stroke-opacity="0.3" stroke-width="1" />
+          <path d="M120 300L236 132h8L360 300Z" fill="#e2dcd1" stroke="none" />
+          <path d="M120 300L236 132M360 300L244 132" stroke={BRONZE} stroke-width="2.2" />
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            const t0 = 0.08 + i * 0.15;
+            const t1 = t0 + 0.07;
+            const y0 = 300 - (300 - 132) * t0;
+            const y1 = 300 - (300 - 132) * t1;
+            return <line x1="240" y1={y0} x2="240" y2={y1} stroke-width={2.2 - i * 0.3} stroke-opacity="0.55" />;
+          })}
+          {[0, 1, 2, 3].map((i) => {
+            const t = 0.1 + i * 0.22;
+            const s = 1 - t;
+            const xl = 120 + (236 - 120) * t - 24 * s;
+            const xr = 360 + (244 - 360) * t + 24 * s;
+            const y = 300 - (300 - 132) * t;
+            const h = 70 * s;
+            return (
+              <>
+                <line x1={xl} y1={y} x2={xl} y2={y - h} stroke-opacity="0.5" />
+                <line x1={xl} y1={y - h} x2={xl + 10 * s} y2={y - h} stroke-opacity="0.5" />
+                <line x1={xr} y1={y} x2={xr} y2={y - h} stroke-opacity="0.5" />
+                <line x1={xr} y1={y - h} x2={xr - 10 * s} y2={y - h} stroke-opacity="0.5" />
+              </>
+            );
+          })}
+          <path d="M40 132v-26h36v26M398 132v-40h28v40M430 132v-22h22v22" fill="#efebe3" stroke-opacity="0.4" />
+        </>
+      )
+    }
+  </g>
+</svg>

@@ -1,0 +1,172 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+import site from '../data/site.json';
+
+/**
+ * The organisation, drawn as a tree.
+ *
+ * Placed early on the page deliberately: a procurement reader deciding whether
+ * a contractor can carry their job wants to know the firm has a structure
+ * before they are shown photographs of finished buildings. It answers "who
+ * actually runs this" ahead of "what does it look like".
+ *
+ * Two honesty constraints shape it:
+ *
+ *  1. It groups people by FUNCTION, never by reporting line. Every role title
+ *     here is the person's own; the branch they sit under comes from the
+ *     `division` field, which the owner sets per person from /admin. The site
+ *     never asserts that one named employee reports to another, because only
+ *     the owner knows that and a guess would be a fabricated fact about a real
+ *     person.
+ *  2. The headcount figures come from site.json, not from counting the cards —
+ *     the named people are the leadership, not the whole 2,000-strong workforce,
+ *     and showing eleven cards beside a claim of 2,000 staff without saying so
+ *     would read as an inflated number.
+ *
+ * Drawn as a hard-ruled chart rather than a grid of soft cards: connector lines
+ * are real borders, so it reads as an org chart on a drawing sheet, which is
+ * the same register as the rest of the site.
+ */
+const team = (await getCollection('team')).sort((a, b) => a.data.order - b.data.order);
+
+const chairman = team.find((m) => m.data.division === 'leadership') ?? team[0];
+
+const BRANCHES = [
+  {
+    key: 'projects',
+    label: 'Projects & Operations',
+    icon: 'hardHat' as const,
+    note: 'Sites, industrial builds and day-to-day delivery.',
+  },
+  {
+    key: 'materials',
+    label: 'Quarries & Materials',
+    icon: 'truck' as const,
+    note: 'Own stone, aggregate, concrete and plant.',
+  },
+  {
+    key: 'finance',
+    label: 'Finance & Accounts',
+    icon: 'clipboard' as const,
+    note: 'Billing, statutory compliance and audit.',
+  },
+  {
+    key: 'admin',
+    label: 'Admin, HR & Liaison',
+    icon: 'building' as const,
+    note: 'People, offices and authority approvals.',
+  },
+].map((b) => ({
+  ...b,
+  members: team.filter((m) => m.data.division === b.key),
+}))
+  // A branch with nobody in it is not drawn — an empty box on an org chart
+  // reads as a vacancy rather than as a section the owner has not filled in.
+  .filter((b) => b.members.length > 0);
+
+const initials = (name: string) =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('');
+---
+
+<section id="org" class="section scroll-mt-24 bg-mist-50">
+  <div class="container-x">
+    <SectionHeading
+      eyebrow="The organisation"
+      title="Who actually runs the work"
+      meta="Four functions"
+      lead="Four functions under one owner, each with a named person answerable for it. The people below are the leadership — the site crews, operators and engineers sit beneath them."
+    />
+
+    <!-- Head of the tree. -->
+    <div class="org mt-14" data-reveal-group>
+      <div class="org-head" data-reveal>
+        <div class="panel-light flex items-center gap-4 p-5 md:p-6">
+          <span
+            class="grid h-14 w-14 shrink-0 place-items-center border border-hairline bg-concrete font-display text-lg font-bold text-ink-950"
+            aria-hidden="true"
+          >
+            {initials(chairman.data.name)}
+          </span>
+          <div class="min-w-0">
+            <p class="font-display text-xl font-bold leading-tight text-ink-950 md:text-2xl">
+              {chairman.data.name}
+            </p>
+            <p class="mt-1 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-stone-600">
+              {chairman.data.role} &middot; Est. {site.founded}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- The four function branches. -->
+      <ol class="org-branches" data-cols={BRANCHES.length}>
+        {
+          BRANCHES.map((branch) => (
+            <li class="org-branch" data-reveal>
+              <div class="spot flex h-full flex-col border border-hairline bg-concrete">
+                <div class="flex items-start gap-3 border-b border-hairline p-5">
+                  <span class="mt-0.5 grid h-9 w-9 shrink-0 place-items-center bg-accent-50 border border-accent-100 text-accent-600">
+                    <Icon name={branch.icon} class="h-5 w-5" strokeWidth={1.5} />
+                  </span>
+                  <div class="min-w-0">
+                    <h3 class="font-display text-base font-bold uppercase leading-tight tracking-wide text-ink-950">
+                      {branch.label}
+                    </h3>
+                    <p class="mt-1.5 text-sm leading-snug text-stone-600">{branch.note}</p>
+                  </div>
+                </div>
+
+                <ul class="flex flex-1 flex-col">
+                  {branch.members.map((m) => (
+                    <li class="flex items-center gap-3 border-b border-hairline px-5 py-3.5 last:border-b-0">
+                      <span
+                        class="grid h-8 w-8 shrink-0 place-items-center border border-hairline bg-mist-100 font-display text-[0.68rem] font-bold text-ink-950"
+                        aria-hidden="true"
+                      >
+                        {initials(m.data.name)}
+                      </span>
+                      <span class="min-w-0">
+                        <span class="block font-display text-sm font-semibold leading-tight text-ink-950">
+                          {m.data.name}
+                        </span>
+                        <span class="mt-0.5 block text-xs leading-snug text-stone-600">
+                          {m.data.role}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <!-- The workforce the named leadership sits on top of. -->
+    <ul
+      class="mt-10 grid gap-px rounded-xl border border-hairline bg-hairline overflow-hidden sm:grid-cols-3"
+      data-reveal-group
+    >
+      {
+        site.people.map((p) => (
+          <li class="bg-mist-50 px-5 py-6 text-center" data-reveal>
+            <p class="font-display text-4xl font-bold leading-none tabular-nums text-ink-950">
+              {p.value}
+            </p>
+            <p class="mt-2 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-stone-600">
+              {p.label}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

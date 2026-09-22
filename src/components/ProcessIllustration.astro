@@ -1,0 +1,215 @@
+---
+/**
+ * Animated illustration for each stage of "How We Work".
+ *
+ * Drawn rather than photographed on purpose: these depict a process, not a
+ * place, and a set of four consistent line illustrations reads as designed in
+ * a way that four unrelated site photographs never will. Everything is inline
+ * SVG in the brand palette, so there is no extra request, no licensing
+ * question, and nothing to go stale.
+ *
+ * The motion is deliberately slow and looping — a survey line sweeping, a
+ * quote filling in, a roller crossing fresh asphalt, a stamp landing. It reads
+ * as alive at a glance without demanding attention, which is what keeps it
+ * feeling premium rather than busy. All of it stops under reduced motion.
+ */
+interface Props {
+  step: 'survey' | 'estimate' | 'execute' | 'handover';
+  class?: string;
+}
+
+const { step, class: className = '' } = Astro.props;
+---
+
+<div class:list={['process-art', className]} data-step={step} aria-hidden="true">
+  <svg viewBox="0 0 160 120" fill="none" role="presentation">
+    {/* Shared ground line */}
+    <path d="M12 104h136" class="ground" stroke-width="3" stroke-linecap="round"></path>
+
+    {step === 'survey' && (
+      <>
+        {/* Tripod */}
+        <path d="M64 58 48 104M64 58 80 104M64 58v-6" class="ink" stroke-width="3.5" stroke-linecap="round" />
+        <path d="M54 84h20" class="ink" stroke-width="2.5" stroke-linecap="round" />
+        {/* Instrument head */}
+        <rect x="52" y="40" width="24" height="14" rx="3" class="amber-fill" />
+        <path d="M76 45h10" class="ink" stroke-width="3.5" stroke-linecap="round" />
+        {/* Sweeping sight line */}
+        <g class="sweep">
+          <path d="M78 47 140 30" class="maroon dashed" stroke-width="2.5" stroke-linecap="round" />
+        </g>
+        {/* Survey staff being measured to */}
+        <path d="M140 26v56" class="ink" stroke-width="3.5" stroke-linecap="round" />
+        <path d="M134 82h12" class="ink" stroke-width="2.5" stroke-linecap="round" />
+        <circle cx="140" cy="30" r="5" class="amber-fill pulse" />
+      </>
+    )}
+
+    {step === 'estimate' && (
+      <>
+        {/* Document */}
+        <path d="M44 20h56l16 16v66H44z" class="sheet" stroke-width="3" stroke-linejoin="round" />
+        <path d="M100 20v16h16" class="ink" stroke-width="3" stroke-linejoin="round" />
+        {/* Line items filling in, one after another */}
+        <g stroke-linecap="round" stroke-width="4" class="maroon">
+          <path d="M56 52h44" class="row row-1" />
+          <path d="M56 64h34" class="row row-2" />
+          <path d="M56 76h40" class="row row-3" />
+        </g>
+        {/* Total rule and figure */}
+        <path d="M56 88h48" class="ink" stroke-width="2" stroke-linecap="round" />
+        <rect x="56" y="92" width="26" height="8" rx="4" class="amber-fill total" />
+      </>
+    )}
+
+    {step === 'execute' && (
+      <>
+        {/* Fresh asphalt mat being laid left to right */}
+        <path d="M12 96h136" class="mat" stroke-width="12" stroke-linecap="round" />
+        {/* Centre line markings appear behind the roller */}
+        <path d="M20 96h16M48 96h16M76 96h16M104 96h16" class="markings" stroke-width="3" stroke-linecap="round" />
+        {/* Roller travelling across */}
+        <g class="roller">
+          <rect x="46" y="52" width="40" height="22" rx="4" class="amber-fill" />
+          <rect x="54" y="42" width="22" height="12" rx="3" class="ink-fill" />
+          <circle cx="58" cy="84" r="10" class="ink" stroke-width="4" />
+          <circle cx="88" cy="84" r="6" class="ink" stroke-width="4" />
+        </g>
+      </>
+    )}
+
+    {step === 'handover' && (
+      <>
+        {/* Clipboard */}
+        <rect x="46" y="22" width="68" height="76" rx="6" class="sheet" stroke-width="3" />
+        <rect x="66" y="14" width="28" height="14" rx="4" class="amber-fill" />
+        {/* Signed-off tick, drawn in */}
+        <path d="M62 58 76 72 100 44" class="tick" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+        {/* Approval stamp landing */}
+        <g class="stamp">
+          <circle cx="112" cy="80" r="17" class="maroon" stroke-width="4" />
+          <path d="M104 80h16" class="maroon" stroke-width="4" stroke-linecap="round" />
+        </g>
+      </>
+    )}
+  </svg>
+</div>
+
+<style>
+  .process-art {
+    width: 100%;
+  }
+
+  .process-art svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Palette */
+  .ink { stroke: var(--color-ink-950); }
+  .ink-fill { fill: var(--color-ink-950); }
+  .amber-fill { fill: var(--color-amber-500); }
+  .maroon { stroke: var(--color-amber-700); }
+  .ground { stroke: var(--color-ink-950); opacity: 0.14; }
+  .sheet { stroke: var(--color-ink-950); fill: #fff; }
+  .dashed { stroke-dasharray: 7 7; }
+
+  /* ---- survey: the sight line sweeps up and down the staff ---- */
+  .sweep {
+    transform-box: fill-box;
+    transform-origin: 0% 50%;
+    animation: sweep 5s ease-in-out infinite;
+  }
+  @keyframes sweep {
+    0%, 100% { transform: rotate(0deg); }
+    45%      { transform: rotate(11deg); }
+  }
+  .pulse { animation: pulse 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes pulse {
+    0%, 35%, 100% { opacity: 0.35; transform: scale(0.8); }
+    50%           { opacity: 1;    transform: scale(1.15); }
+  }
+
+  /* ---- estimate: rate items land one by one, then the total ---- */
+  .row {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: draw 5s ease-out infinite;
+  }
+  .row-2 { animation-delay: 0.35s; }
+  .row-3 { animation-delay: 0.7s; }
+  @keyframes draw {
+    0%        { stroke-dashoffset: 60; }
+    22%, 78%  { stroke-dashoffset: 0; }
+    92%, 100% { stroke-dashoffset: 60; }
+  }
+  .total {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: total 5s ease-out infinite;
+  }
+  @keyframes total {
+    0%, 26%   { transform: scaleX(0); }
+    42%, 78%  { transform: scaleX(1); }
+    92%, 100% { transform: scaleX(0); }
+  }
+
+  /* ---- execute: the roller crosses, laying mat and markings ---- */
+  .mat {
+    stroke: var(--color-ink-800);
+    stroke-dasharray: 136;
+    stroke-dashoffset: 136;
+    animation: lay 5s ease-in-out infinite;
+  }
+  @keyframes lay {
+    0%        { stroke-dashoffset: 136; }
+    60%, 88%  { stroke-dashoffset: 0; }
+    100%      { stroke-dashoffset: 136; }
+  }
+  .markings {
+    stroke: var(--color-amber-500);
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: lay 5s ease-in-out infinite 0.4s;
+  }
+  .roller {
+    animation: roll 5s ease-in-out infinite;
+  }
+  @keyframes roll {
+    0%       { transform: translateX(-46px); }
+    60%, 88% { transform: translateX(52px); }
+    100%     { transform: translateX(-46px); }
+  }
+
+  /* ---- handover: tick is signed, then the stamp lands ---- */
+  .tick {
+    stroke: var(--color-amber-500);
+    stroke-dasharray: 70;
+    stroke-dashoffset: 70;
+    animation: draw 5s ease-out infinite;
+  }
+  .stamp {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: stamp 5s ease-out infinite;
+  }
+  @keyframes stamp {
+    0%, 40%   { opacity: 0; transform: scale(1.7) rotate(-12deg); }
+    52%, 84%  { opacity: 1; transform: scale(1) rotate(-12deg); }
+    96%, 100% { opacity: 0; transform: scale(1.7) rotate(-12deg); }
+  }
+
+  /* Motion here is decoration, so it is the first thing to go. The drawings
+     stay in their finished state rather than disappearing. */
+  @media (prefers-reduced-motion: reduce) {
+    .sweep, .pulse, .row, .total, .mat, .markings, .roller, .tick, .stamp {
+      animation: none;
+    }
+    .row, .mat, .markings, .tick { stroke-dashoffset: 0; }
+    .total { transform: scaleX(1); }
+    .stamp { opacity: 1; transform: scale(1) rotate(-12deg); }
+    .pulse { opacity: 1; }
+  }
+</style>

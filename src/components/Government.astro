@@ -1,0 +1,88 @@
+---
+import { getCollection } from 'astro:content';
+import SectionHeading from './SectionHeading.astro';
+import Icon from './Icon.astro';
+
+const works = (await getCollection('government')).sort((a, b) => a.data.order - b.data.order);
+
+// Contract values are kept in the content for the owner's records but are not
+// published: no rupee figure is shown here, and nothing is drawn to scale by
+// value either — a bar sized by cost would publish the cost by other means.
+
+// Public bodies AHT has worked for beyond the contracts listed above.
+const alsoServed = (await getCollection('clients'))
+  .filter((c) => c.data.sector === 'government')
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<section id="government" class="scroll-mt-24 bg-sand py-20 md:py-28">
+  <div class="container-x">
+    <div class="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-16">
+      {/* Pinned while the authorities list scrolls past, matching the
+          What We Do section. */}
+      <div class="lg:sticky lg:top-32 lg:self-start">
+        <SectionHeading
+          eyebrow="Public Sector"
+          title="Government road works"
+          lead="Panchayats, Municipal Councils and Corporations across South Gujarat and the Union Territories — construction, maintenance, upgradation and beautification."
+        />
+
+        <div class="relative mt-10 overflow-hidden rounded-3xl bg-mist-100 p-8 shadow-press" data-reveal>
+          <div class="hatch-light pointer-events-none absolute inset-0 opacity-60" aria-hidden="true"></div>
+          <div class="relative">
+            <p class="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent-700">
+              Government road works completed
+            </p>
+            <p class="mt-3 font-display text-6xl font-bold leading-none tabular-nums text-ink-950 md:text-7xl">
+              {works.length}
+              <span class="ml-1 text-2xl font-semibold text-accent-700 md:text-3xl">public authorities</span>
+            </p>
+            <p class="mt-4 text-base leading-relaxed text-stone-700">
+              Tender documentation, measurement and billing are routine work for us, not an
+              afterthought.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <ul class="space-y-4" data-reveal-group>
+          {
+            works.map((work) => (
+              <li class="card p-6 transition-all duration-300 hover:-translate-y-1" data-reveal>
+                <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h3 class="title-plain text-lg text-ink-950">{work.data.authority}</h3>
+                </div>
+
+                {work.data.location && (
+                  <p class="mt-1 flex items-center gap-1.5 text-sm text-stone-700">
+                    <Icon name="pin" class="h-4 w-4 shrink-0 text-accent-600" />
+                    {work.data.location}
+                  </p>
+                )}
+
+              </li>
+            ))
+          }
+        </ul>
+
+        {
+          alsoServed.length > 0 && (
+            <div class="mt-8 rounded-2xl border border-dashed border-mist-300 p-6" data-surface data-reveal>
+              <p class="font-display text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-stone-700">
+                Also proud to serve
+              </p>
+              <ul class="mt-4 flex flex-wrap gap-2">
+                {alsoServed.map((c) => (
+                  <li class="bg-white px-4 py-2 text-sm text-ink-900 ring-1 ring-ink-950/5">
+                    {c.data.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>

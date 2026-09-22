@@ -1,0 +1,333 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+import site from '../data/site.json';
+
+/**
+ * The start window.
+ *
+ * The opening screen and, deliberately, a printable one-page flyer. The mark
+ * builds, the dial draws itself, then the divisions swing out around it;
+ * hovering or focusing one writes its detail into the middle of the ring, and
+ * choosing one plays a slow push-in through the logo before the page changes.
+ *
+ * Five things about it are deliberate and load-bearing:
+ *
+ *  1. Every node is a REAL <a href>. Not a div with a click handler — so it is
+ *     keyboard reachable, works with middle-click and "open in new tab", and is
+ *     followed by crawlers. The circle is presentation; the list underneath is
+ *     a plain navigation list.
+ *  2. It never gates a visitor twice. It shows on arrival, but not when you
+ *     come back from somewhere inside the site (see the referrer check in
+ *     start.ts) — otherwise moving between divisions would put a full-screen
+ *     window in the way every single time. The header logo reopens it on
+ *     demand, which is what makes that restraint affordable.
+ *  3. It cannot trap anyone: no JavaScript means no window at all, reduced
+ *     motion skips the opening, a background tab skips it, Escape and the
+ *     backdrop close it, and there is always a visible way out.
+ *  4. The division links carry `data-no-transition`. This window runs its own
+ *     exit animation and then navigates itself; without that flag the global
+ *     page-transition handler would race it and cover the screen mid-zoom.
+ *  5. Everything outside the ring — the sheet header, the crop marks, the
+ *     contact block — exists so that File → Print produces a usable A4 flyer
+ *     rather than a screenshot of a website. See the @media print block in
+ *     global.css.
+ */
+const domains = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const projects = await getCollection('projects');
+
+const pick = (label: string) => site.stats.find((s) => s.label === label);
+
+/**
+ * The headline figure, derived exactly as ProofOfDelivery derives it.
+ *
+ * The road figure and the project book count DIFFERENT things, so adding them
+ * naively double-counts: the handful of projects filed under `road` are already
+ * inside the 200+ road work orders. Excluding them is what makes the combined
+ * number honest. Both halves are read from the content, so the figure moves by
+ * itself as the owner adds work from /admin — it is never typed in twice.
+ */
+const roadStat = pick('Road work completed');
+const roadOrders = Number((roadStat?.value ?? '0').replace(/[^0-9]/g, ''));
+const buildingProjects = projects.filter((p) => p.data.category !== 'road');
+const totalWorks = roadOrders + buildingProjects.length;
+
+/** Years in business, counted from the founding year rather than written down. */
+const years = new Date().getFullYear() - site.founded;
+
+const roadsLaid = pick('Roads laid');
+
+/**
+ * The three figures on the sheet.
+ *
+ * The road work-order count used to lead here. It has been replaced by the
+ * combined total: roads are one of seven divisions, and opening on a road-only
+ * number undersold everything else on the ring.
+ */
+const hint = [
+  {
+    value: `${totalWorks}+`,
+    unit: 'road & building',
+    label: 'Projects completed',
+  },
+  {
+    value: `${years}`,
+    unit: `since ${site.founded}`,
+    label: 'Years in business',
+  },
+  ...(roadsLaid ? [{ value: roadsLaid.value, unit: roadsLaid.unit, label: roadsLaid.label }] : []),
+];
+
+/**
+ * Tick marks on the dial, one per division, at the same angles start.ts uses
+ * to place the tiles. Drawn in the ring's own viewBox units, so they hold their
+ * position at any radius — the ring is sized in pixels at runtime, but nothing
+ * inside it is.
+ */
+const RING_VB = 200;
+const RING_R = 96;
+const RING_C = RING_VB / 2;
+const ticks = domains.map((_, i) => (360 / domains.length) * i - 90);
+---
+
+<div
+  class="start"
+  data-start
+  data-lenis-prevent
+  role="dialog"
+  aria-modal="true"
+  aria-label={`${site.legalName} — choose a division`}
+>
+  <div class="start__grid" aria-hidden="true"></div>
+
+  {/* The world, full-bleed and already moving: the same city as the rest of
+      the site, looking down the road with the resort on the left and a rising
+      skyline on the right. It sits OUTSIDE [data-start-stage], which scales on
+      exit — the city holds its ground and surges forward while the mark flies
+      at the reader. z-index -1 keeps it above the sheet's own background and
+      below every piece of content. Hidden on paper by the print block. */}
+  <div class="start__world" aria-hidden="true">
+    <canvas class="terrain terrain--opening" data-terrain="opening"></canvas>
+  </div>
+
+  {/* Corner registration marks. A drawing sheet is cropped, not framed — and
+      on paper these are exactly what they look like. */}
+  <div class="start__crop" aria-hidden="true">
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Sheet header. Reads as a title block on screen and on paper. -->
+  <div class="start__head" data-start-head>
+    <p class="start__head-name">{site.legalName}</p>
+    <p class="start__head-meta">
+      <span>{site.slogan}</span>
+      <span class="start__head-sep" aria-hidden="true">—</span>
+      <span>{site.areasServed.slice(0, 4).join(' · ')}</span>
+    </p>
+  </div>
+
+  <div class="start__stage" data-start-stage>
+    {/* The lens: a disc of glass behind the mark. The city stays visible
+        through it, blurred, so the identity sits ON the world rather than on a
+        white card cut out of it. Sized by start.ts from the ring's clearance. */}
+    <span class="start__glass" data-start-glass aria-hidden="true"></span>
+    {/* The dial the tiles sit on, drawn rather than bordered.
+        A CSS border cannot be drawn on, cannot carry tick marks and cannot
+        sweep. Sized from --ring-d, which start.ts sets from the same radius it
+        positions the tiles with, so the line can never drift away from them. */}
+    <svg
+      class="start__ring"
+      viewBox={`0 0 ${RING_VB} ${RING_VB}`}
+      fill="none"
+      aria-hidden="true"
+      data-start-ring
+    >
+      <circle
+        class="start__ring-track"
+        data-start-ring-track
+        cx={RING_C}
+        cy={RING_C}
+        r={RING_R}
+        pathLength="100"
+        vector-effect="non-scaling-stroke"
+      />
+      {/* A short run of light that travels round the dial as it is drawn. */}
+      <circle
+        class="start__ring-glow"
+        data-start-ring-glow
+        cx={RING_C}
+        cy={RING_C}
+        r={RING_R}
+        pathLength="100"
+        vector-effect="non-scaling-stroke"
+      />
+      <g class="start__ring-ticks" data-start-ring-ticks>
+        {
+          ticks.map((angle) => (
+            <line
+              x1={RING_C + RING_R - 5}
+              y1={RING_C}
+              x2={RING_C + RING_R + 5}
+              y2={RING_C}
+              vector-effect="non-scaling-stroke"
+              transform={`rotate(${angle} ${RING_C} ${RING_C})`}
+            />
+          ))
+        }
+      </g>
+    </svg>
+
+    <!-- The ring of divisions. Positioned radially by script so the circle
+         adapts if a division is ever added or removed. -->
+    <ul class="start__orbit" data-start-orbit>
+      {
+        domains.map((d, i) => (
+          <li class="start__node" data-start-node>
+            <a
+              class="start__node-link"
+              href={`/divisions/${d.id}/`}
+              data-no-transition
+              data-start-title={d.data.title}
+              data-start-summary={d.data.summary}
+            >
+              <span class="start__node-num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="start__node-icon">
+                <Icon name={d.data.icon} class="h-5 w-5" strokeWidth={1.5} />
+              </span>
+              <span class="start__node-name">{d.data.title}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- The centre: the mark, and whatever the pointer is currently on. -->
+    <div class="start__core" data-start-core>
+      <svg
+        class="start__mark"
+        viewBox="18 8 110 124"
+        fill="none"
+        role="img"
+        aria-label={`${site.legalName} logo`}
+      >
+        {/* The mark is drafted before it is built: construction lines along the
+            triangle's three sides, then its outline in pen, then the fill; a
+            run of light crosses it once it stands. start.ts sequences it. */}
+        <defs>
+          <clipPath id="start-a-clip">
+            <path d="M72.926 12.051 L123.48 103.812 L108.688 103.812
+             C96.766 82.176 84.848 60.539 72.926 38.902
+             L43.812 91.75 L77.543 91.75 L81.176 98.348 L84.191 103.812 L22.371 103.812 Z" />
+          </clipPath>
+          <linearGradient id="start-sheen" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0" />
+            <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.75" />
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <g data-start-guides stroke="#a88450" stroke-width="0.55" stroke-linecap="round" vector-effect="non-scaling-stroke">
+          <line x1="16.3" y1="114.8" x2="79" y2="1" />
+          <line x1="66.9" y1="1" x2="129.5" y2="114.8" />
+          <line x1="10" y1="103.812" x2="136" y2="103.812" />
+        </g>
+        <path
+          data-start-outline
+          fill="none"
+          stroke="#16181c"
+          stroke-width="0.9"
+          stroke-linejoin="round"
+          d="M72.926 12.051 L123.48 103.812 L108.688 103.812
+             C96.766 82.176 84.848 60.539 72.926 38.902
+             L43.812 91.75 L77.543 91.75 L81.176 98.348 L84.191 103.812 L22.371 103.812 Z"
+        />
+        <path
+          data-start-a
+          fill="#F49000"
+          fill-rule="evenodd"
+          d="M72.926 12.051 L123.48 103.812 L108.688 103.812
+             C96.766 82.176 84.848 60.539 72.926 38.902
+             L43.812 91.75 L77.543 91.75 L81.176 98.348 L84.191 103.812 L22.371 103.812 Z"
+        />
+        <path
+          data-start-strokes
+          fill="#9D0F12"
+          fill-rule="evenodd"
+          d="M87.191 91.75 L92.578 91.75 L99.227 103.812 L93.836 103.812 Z
+             M72.926 47.793 L117.039 127.945 L114.59 127.945 L71.703 50.016 Z
+             M66.801 58.91 L104.832 127.945 L102.383 127.945 L65.574 61.137 Z"
+        />
+        <path data-start-rule d="M22.371 110.777 H123.48" stroke="#9D0F12" stroke-width="2.044" />
+        <rect data-start-sheen x="-40" y="8" width="26" height="124" fill="url(#start-sheen)" clip-path="url(#start-a-clip)" opacity="0" />
+      </svg>
+
+      <p class="start__mask">
+        <span class="start__name" data-start-name>{site.name}</span>
+      </p>
+
+      {/* The years figure lives ONCE, in the figures row below the ring. It was
+          briefly here as well, which stated "25 years" twice on one screen. */}
+
+      {/* Swapped as the pointer moves around the ring. Announced politely so a
+          screen reader is told what changed without being interrupted. */}
+      <div class="start__detail" data-start-detail aria-live="polite">
+        <p class="start__detail-title" data-start-detail-title>{site.slogan}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Always a visible way out. -->
+  <div class="start__actions" data-start-actions>
+    <p class="start__summary" data-start-detail-text>
+      {domains.length} divisions, one company. Choose one, or enter the site.
+    </p>
+
+    <div class="start__buttons">
+      <button type="button" class="start__enter" data-start-enter>
+        Enter the site
+        <Icon name="arrowRight" class="h-4 w-4" />
+        {/* Fills while the opening waits to carry on by itself; any
+            interaction with the window stops it. See start.ts. */}
+        <span class="start__enter-progress" data-start-progress aria-hidden="true"></span>
+      </button>
+      {/* The flyer, on paper. Hidden from print itself — see global.css. */}
+      <button type="button" class="start__print" data-start-print>
+        <Icon name="clipboard" class="h-4 w-4" />
+        Print as flyer
+      </button>
+    </div>
+
+    {
+      hint.length > 0 && (
+        <dl class="start__hint">
+          {hint.map((h) => (
+            <div class="start__hint-item">
+              <dt class="start__hint-value">
+                <span
+                  data-start-count={String(Number(h.value.replace(/[^0-9]/g, '')))}
+                  data-start-count-suffix={h.value.replace(/[0-9,]/g, '')}
+                >
+                  {h.value}
+                </span>
+                <span class="start__hint-unit">{h.unit}</span>
+              </dt>
+              <dd class="start__hint-label">{h.label}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+
+    {/* Paper only. A flyer that does not say how to reach the company is a
+        poster; this is the line that makes it a flyer. */}
+    <div class="start__contact" aria-hidden="true">
+      <p>
+        {site.address.line1}, {site.address.line2}, {site.address.city}
+        {' '}
+        {site.address.postalCode}, {site.address.state}
+      </p>
+      <p>
+        <strong>{site.phone}</strong> · {site.email}
+      </p>
+    </div>
+  </div>
+</div>

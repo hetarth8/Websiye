@@ -1,0 +1,92 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+
+const divisions = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const total = String(divisions.length).padStart(2, '0');
+---
+
+<!--
+  The sticky heading + sequenced-entries mechanic is kept — it's genuinely good.
+  What changed is the entries: each is now a substantial block with a big index
+  anchor, a filled icon chip and its own hard facts, instead of a thin heading
+  in a list that read as an unfinished outline.
+-->
+<section id="services" class="scroll-mt-24 bg-mist-50 py-20 md:py-28">
+  <div class="container-x">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,21rem)_minmax(0,1fr)] lg:gap-16">
+      <div class="lg:sticky lg:top-32 lg:self-start">
+        <div class="title-block" data-reveal>
+          <div class="title-block__bar">
+            <span>What we do</span>
+            <span class="title-block__meta">{total} divisions</span>
+          </div>
+          <h2 class="title-block__title mt-6">
+            Seven divisions,<br /><span class="text-gradient">one company</span>
+          </h2>
+        </div>
+        <p class="mt-6 max-w-sm text-lg leading-relaxed text-stone-600">
+          Roads, plants, towers and homes — plus the quarries, concrete and asphalt that feed them.
+          One contract, one accountable team, ground to handover.
+        </p>
+        <a href="/#contact" class="btn btn-primary magnetic mt-9"> Start a project </a>
+        <p class="mt-6 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-stone-600">
+          Open any division for its projects, plant and quarries.
+        </p>
+      </div>
+
+      <ol class="grid gap-4 sm:gap-5" data-reveal-group>
+        {
+          divisions.map((division, index) => (
+            <li data-reveal>
+              <a
+                href={`/divisions/${division.id}/`}
+                class="card spot group grid grid-cols-[auto_1fr] gap-x-5 gap-y-4 p-6 transition-all duration-300 hover:-translate-y-1 md:grid-cols-[auto_1fr_auto] md:p-7"
+              >
+              {/* Big index number as a design anchor. */}
+              <span class="font-display text-4xl font-bold leading-none text-accent-700 tabular-nums md:text-5xl">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+
+              <div class="min-w-0">
+                <div class="flex items-center gap-3">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-50 border border-accent-100 text-accent-600 shadow-sm">
+                    <Icon name={division.data.icon} class="h-5 w-5" strokeWidth={1.5} />
+                  </span>
+                    <h3 class="title-plain text-2xl text-ink-950 transition-colors group-hover:text-ink-950">
+                    {division.data.title}
+                  </h3>
+                </div>
+
+                <p class="mt-3 max-w-xl text-base leading-relaxed text-stone-600">
+                  {division.data.summary}
+                </p>
+
+                {division.data.highlights.length > 0 && (
+                  <ul class="mt-4 flex flex-wrap gap-2">
+                    {division.data.highlights.map((item) => (
+                      <li class="bg-mist-100 px-3 py-1 font-mono text-[0.72rem] uppercase tracking-[0.08em] text-ink-800">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* The full brand ramp as a thin spine on the right, drawn in on
+                  hover — a quiet, modern flourish. */}
+              <span
+                class="hidden w-1 self-stretch bg-brand-ramp opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:block"
+                aria-hidden="true"
+              />
+              </a>
+            </li>
+          ))
+        }
+        <li class="pt-2 text-right">
+          <span class="index-label">{total} / {total} divisions</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>

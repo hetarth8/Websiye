@@ -1,0 +1,82 @@
+---
+import { getCollection, render } from 'astro:content';
+import Icon from './Icon.astro';
+import SectionHeading from './SectionHeading.astro';
+
+const faqs = (await getCollection('faqs')).sort((a, b) => a.data.order - b.data.order);
+
+// Render each answer body up front so the markup below stays flat.
+const entries = await Promise.all(
+  faqs.map(async (faq) => ({ faq, Content: (await render(faq)).Content })),
+);
+---
+
+<section id="faq" class="section scroll-mt-24 bg-sand">
+  <div class="container-x">
+    <div class="grid gap-14 lg:grid-cols-[0.85fr_1fr] lg:items-start lg:gap-16">
+      <div class="lg:sticky lg:top-28" data-reveal>
+        {/* Branded panel rather than another site photo: this column sits
+            beside plain text, so the mark does more for recognition here than
+            a third foundations shot would. */}
+        <div
+          class="panel-light relative overflow-hidden px-8 py-12 text-center"
+        >
+          <div
+            class="pointer-events-none absolute inset-0"
+            aria-hidden="true"
+          >
+          </div>
+
+          <img
+            src="/logo/aht-mark.svg"
+            alt=""
+            width="96"
+            height="96"
+            class="relative mx-auto h-24 w-24"
+            loading="lazy"
+          />
+
+          <p class="relative mt-6 font-display text-3xl font-bold leading-none text-ink-950">
+            Ajay H. Thakur
+          </p>
+          <p
+            class="relative mt-2 font-display text-xs font-semibold uppercase tracking-[0.22em] text-accent-600"
+          >
+            Asphalt Road &amp; Civil Work
+          </p>
+          <p class="relative mx-auto mt-5 max-w-xs text-sm leading-relaxed text-stone-600">
+            Vapi, Gujarat — serving industrial estates, corporate plants and municipal bodies.
+          </p>
+        </div>
+
+        <div class="mt-8">
+          <SectionHeading
+            eyebrow="Questions"
+            title="Answers before you enquire"
+            lead="If your question is not here, call or message us — we answer directly."
+          />
+        </div>
+      </div>
+
+      <!-- Native <details> gives us keyboard support, screen-reader semantics
+           and correct open/close state without any JavaScript. -->
+      <div class="divide-y divide-mist-200 border-y border-mist-200" data-surface data-reveal-group>
+        {
+          entries.map(({ faq, Content }) => (
+            <details class="group" data-reveal>
+              <summary class="flex w-full cursor-pointer list-none items-center justify-between gap-6 py-6 text-left font-display text-lg font-semibold text-ink-950 transition-colors hover:text-accent-700 [&::-webkit-details-marker]:hidden">
+                {faq.data.question}
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-accent-700 ring-1 ring-mist-200 transition-transform duration-300 group-open:rotate-180 group-open:bg-accent-600 group-open:text-white group-open:ring-amber-500">
+                  <Icon name="chevronDown" class="h-5 w-5" />
+                </span>
+              </summary>
+              <div class="prose-sm max-w-none pb-6 pr-14 text-sm leading-relaxed text-stone-600">
+                <Content />
+              </div>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

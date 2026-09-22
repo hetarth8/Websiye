@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import SectionHeading from './SectionHeading.astro';
+import ProjectCard from './ProjectCard.astro';
+import Icon from './Icon.astro';
+
+/**
+ * The home page leads with a few flagship projects as rich cards — the
+ * crown-jewel contracts shown at poster scale rather than as a spreadsheet row.
+ * The complete, filterable register still lives on /projects.
+ */
+const all = await getCollection('projects');
+
+// Featured (owner-controlled from /admin) come first, preferring ones that have
+// a photograph so the cards carry weight; then top up from the rest.
+// Each tier is sorted on its own and only then concatenated. Sorting the
+// combined array would re-order it purely by `order` and throw the tiers away,
+// which would make the owner's `featured` toggle in /admin do almost nothing.
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) =>
+  a.data.order - b.data.order;
+
+const featuredWithCover = all.filter((p) => p.data.featured && p.data.cover).sort(byOrder);
+const featuredNoCover = all.filter((p) => p.data.featured && !p.data.cover).sort(byOrder);
+const rest = all.filter((p) => !p.data.featured && p.data.cover).sort(byOrder);
+
+const flagship = [...featuredWithCover, ...featuredNoCover, ...rest].slice(0, 6);
+---
+
+<section id="projects" class="section scroll-mt-24 bg-concrete">
+  <div class="container-x">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading
+        eyebrow="Our Work"
+        title="Flagship projects"
+        lead="Industrial plants, commercial towers, campuses and road works across South Gujarat, Daman and Silvassa — a selection of the larger contracts."
+      />
+      <a href="/projects" class="btn btn-outline-dark shrink-0">
+        All {all.length} projects
+        <Icon name="arrowRight" class="h-5 w-5" />
+      </a>
+    </div>
+
+    <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+      {flagship.map((project) => <ProjectCard project={project} />)}
+    </div>
+
+    <!-- The complete register lives one click away, where scanning is right. -->
+    <div class="panel-light mt-12 p-8 text-center md:p-10">
+      <p class="font-display text-2xl text-ink-950 md:text-3xl">
+        Every project, in one filterable register
+      </p>
+      {/* "with the contract value" was dropped from this line when contract
+          values stopped being published (the owner's instruction) — the
+          register never shows them, so the line may not promise them. */}
+      <p class="mx-auto mt-3 max-w-xl text-base leading-relaxed text-stone-600">
+        Filter all {all.length} projects by stage or type of work, with the duration and size for
+        each — and open any one for the full detail and photographs.
+      </p>
+      <a href="/projects" class="btn btn-primary mt-7">
+        Open the full project register
+        <Icon name="arrowRight" class="h-5 w-5" />
+      </a>
+    </div>
+  </div>
+</section>

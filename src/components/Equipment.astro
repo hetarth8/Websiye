@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+import SectionHeading from './SectionHeading.astro';
+
+const equipment = (await getCollection('equipment')).sort((a, b) => a.data.order - b.data.order);
+
+// Grouped rather than one long list: a procurement team scanning for "do they
+// have their own pavers" finds it faster under a heading than in a run of 29
+// rows, and the groups are how a site engineer thinks about the register.
+const GROUPS = [
+  { id: 'plant', label: 'Plant & Machinery' },
+  { id: 'vehicles', label: 'Vehicles & Earthmoving' },
+  { id: 'formwork', label: 'Formwork & Scaffolding' },
+  { id: 'tools', label: 'Tools & Testing' },
+] as const;
+
+const grouped = GROUPS.map((g) => ({
+  ...g,
+  items: equipment.filter((e) => e.data.group === g.id),
+})).filter((g) => g.items.length > 0);
+---
+
+<section id="equipment" class="section scroll-mt-24 bg-mist-50">
+  <div class="container-x">
+    <SectionHeading
+      eyebrow="Owned Fleet"
+      title="The equipment register"
+      lead="Everything below is company-owned. It is the same list we submit with a tender, so you can check capacity against your programme before you call."
+    />
+
+    <div class="mt-14 grid gap-6 md:grid-cols-2" data-reveal-group>
+      {
+        grouped.map((group) => (
+          <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-ink-950/5" data-surface data-reveal>
+            <h3 class="bg-mist-50 px-6 py-4 font-display text-sm font-semibold uppercase tracking-[0.16em] text-accent-700">
+              {group.label}
+            </h3>
+            <table class="w-full">
+              <caption class="sr-only">{group.label} owned by AHT Construction</caption>
+              <thead class="sr-only">
+                <tr>
+                  <th scope="col">Item</th>
+                  <th scope="col">Quantity</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-mist-200">
+                {group.items.map((item) => (
+                  <tr class="transition-colors hover:bg-mist-50">
+                    <td class="px-6 py-3 text-sm text-ink-900">{item.data.name}</td>
+                    <td class="w-24 px-6 py-3 text-right font-display text-lg font-bold tabular-nums text-ink-950">
+                      {item.data.quantity}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,304 @@
+# Decap CMS — the /admin panel behind this site.
+#
+# SETUP: replace REPO_OWNER/REPO_NAME below with the GitHub repository this site
+# is deployed from, then in Netlify go to
+#   Site configuration → Access control → OAuth → Install provider → GitHub
+# and paste the Client ID / Secret from a GitHub OAuth app whose callback URL is
+#   https://api.netlify.com/auth/done
+# Logging in then goes through GitHub — this site stores no passwords.
+
+backend:
+  name: github
+  repo: REPO_OWNER/REPO_NAME # <-- CHANGE ME
+  branch: main
+
+# Lets you preview the CMS locally with `npx decap-server` before it is live.
+local_backend: true
+
+# Uploaded images land beside the seeded ones. `public_folder` is written into
+# the markdown as a path relative to the entry file, which is what lets Astro's
+# image() schema helper resolve and optimise them at build time.
+media_folder: src/assets/uploads
+public_folder: ../../assets/uploads
+
+site_url: https://ahtconstruction.netlify.app
+logo_url: /logo/aht-mark.svg
+
+collections:
+  # ---------------------------------------------------------------- projects
+  - name: projects
+    label: Projects
+    label_singular: Project
+    folder: src/content/projects
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}} — {{client}} ({{status}})'
+    sortable_fields: [order, title, value]
+    view_groups:
+      - label: Stage
+        field: status
+      - label: Type of work
+        field: category
+    fields:
+      - { name: title, label: Project name, widget: string }
+      - name: status
+        label: Stage
+        widget: select
+        default: completed
+        hint: Moving this is all it takes to shift a project between the filters on the site.
+        options:
+          - { label: Completed, value: completed }
+          - { label: In progress, value: ongoing }
+          - { label: Upcoming, value: upcoming }
+      - name: category
+        label: Type of work
+        widget: select
+        default: industrial
+        options:
+          - { label: Road, value: road }
+          - { label: Industrial, value: industrial }
+          - { label: Commercial, value: commercial }
+          - { label: Residential, value: residential }
+          - { label: Institutional, value: institutional }
+      - name: sector
+        label: Sector
+        widget: select
+        default: private
+        options:
+          - { label: Private, value: private }
+          - { label: Government, value: government }
+      - { name: cover, label: Main photo, widget: image, required: false }
+      - { name: client, label: Client, widget: string, required: false }
+      - { name: location, label: Location, widget: string, required: false }
+      - name: value
+        label: Contract value (private)
+        widget: string
+        required: false
+        hint: 'For your records only — costs are NOT shown anywhere on the website.'
+      - name: duration
+        label: Completion duration
+        widget: string
+        required: false
+        hint: 'How long it took, e.g. "18 months" or "May 2019 – May 2020".'
+      - name: size
+        label: Size / built-up area
+        widget: string
+        required: false
+        hint: 'Shown on the website where the cost used to be, e.g. "2.5 lac sq.ft." Leave blank to hide it.'
+      - { name: year, label: Year, widget: string, required: false }
+      - { name: scope, label: Scope, widget: string, required: false }
+      - { name: summary, label: Short summary, widget: text, required: false }
+      - { name: gallery, label: More photos, widget: list, field: { name: image, widget: image }, required: false }
+      - { name: featured, label: Show on home page, widget: boolean, default: false }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+      - { name: body, label: Description, widget: markdown, required: false }
+
+  # --------------------------------------------------------------- divisions
+  - name: services
+    label: Divisions
+    label_singular: Division
+    folder: src/content/services
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}'
+    sortable_fields: [order, title]
+    fields:
+      - { name: title, label: Division, widget: string }
+      - { name: summary, label: Summary, widget: text }
+      - name: icon
+        label: Icon
+        widget: select
+        default: building
+        options: [road, building, factory, layers, truck, hardHat, clipboard, shieldCheck]
+      - { name: image, label: Photo, widget: image, required: false }
+      - { name: highlights, label: Bullet points, widget: list, field: { name: item, widget: string }, required: false }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+
+  # -------------------------------------------------------------- facilities
+  - name: facilities
+    label: Quarries & Plants
+    label_singular: Facility
+    folder: src/content/facilities
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{name}} — {{location}}'
+    sortable_fields: [order, name]
+    fields:
+      - { name: name, label: Name, widget: string }
+      - name: kind
+        label: Type
+        widget: select
+        default: quarry
+        options:
+          - { label: Quarry, value: quarry }
+          - { label: Ready-mix concrete plant, value: rmc }
+          - { label: Asphalt drum mix plant, value: asphalt }
+      - { name: location, label: Location, widget: string, required: false }
+      - { name: capacity, label: Capacity, widget: string, required: false, hint: 'e.g. "250 TPH"' }
+      - { name: established, label: Established, widget: string, required: false }
+      - { name: image, label: Photo, widget: image, required: false }
+      - { name: notes, label: Notes, widget: text, required: false }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+
+  # --------------------------------------------------------------- equipment
+  - name: equipment
+    label: Equipment Register
+    label_singular: Equipment item
+    folder: src/content/equipment
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{name}} × {{quantity}}'
+    sortable_fields: [order, name]
+    view_groups:
+      - label: Group
+        field: group
+    fields:
+      - { name: name, label: Item, widget: string }
+      - { name: quantity, label: Quantity, widget: string }
+      - name: group
+        label: Group
+        widget: select
+        default: plant
+        options:
+          - { label: Plant & machinery, value: plant }
+          - { label: Vehicles & earthmoving, value: vehicles }
+          - { label: Formwork & scaffolding, value: formwork }
+          - { label: Tools & testing, value: tools }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+
+  # -------------------------------------------------------------- government
+  - name: government
+    label: Government Works
+    label_singular: Government contract
+    folder: src/content/government
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{authority}} — {{value}}'
+    sortable_fields: [order, authority]
+    fields:
+      - { name: authority, label: Authority, widget: string }
+      - { name: location, label: Location, widget: string, required: false }
+      - { name: value, label: Value (private), widget: string, required: false, hint: 'For your records only — not shown on the website.' }
+      - name: valueCr
+        label: Value in crore (private)
+        widget: number
+        required: false
+        value_type: int
+        hint: For your records only — not shown on the website.
+      - { name: scope, label: Scope, widget: text, required: false }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+
+  # -------------------------------------------------------------------- team
+  - name: team
+    label: Team
+    label_singular: Team member
+    folder: src/content/team
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{name}} — {{role}}'
+    sortable_fields: [order, name]
+    fields:
+      - { name: name, label: Name, widget: string }
+      - { name: role, label: Role, widget: string }
+      - name: division
+        label: Part of the company
+        widget: select
+        default: projects
+        hint: 'Which branch this person appears under in the organisation chart on the home page. "Owner" puts them at the top of the chart.'
+        options:
+          - { label: Owner, value: leadership }
+          - { label: Projects & Operations, value: projects }
+          - { label: Quarries & Materials, value: materials }
+          - { label: Finance & Accounts, value: finance }
+          - { label: Admin, HR & Liaison, value: admin }
+      - { name: photo, label: Photo, widget: image, required: false }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+
+  # ----------------------------------------------------------------- clients
+  - name: clients
+    label: Clients
+    label_singular: Client
+    folder: src/content/clients
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{name}}'
+    sortable_fields: [order, name]
+    view_groups:
+      - label: Sector
+        field: sector
+    fields:
+      - { name: name, label: Client name, widget: string }
+      - { name: logo, label: Logo, widget: image, required: false }
+      - name: sector
+        label: Sector
+        widget: select
+        default: corporate
+        options:
+          - { label: Corporate & industrial, value: corporate }
+          - { label: Government & civic, value: government }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+
+  # ---------------------------------------------------------- certifications
+  - name: certifications
+    label: Registrations & Compliance
+    label_singular: Registration
+    folder: src/content/certifications
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}'
+    sortable_fields: [order, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - name: issuer
+        label: Issued by
+        widget: string
+        required: false
+        hint: 'The authority that issued it, e.g. "Government of Gujarat" or "GST Department". Leave blank and this line simply will not appear.'
+      - name: reference
+        label: Reference number
+        widget: string
+        required: false
+        hint: 'The registration, GSTIN, PAN or licence number as printed on the document. Leave blank to hide it.'
+      - name: summary
+        label: Summary
+        widget: text
+        required: false
+        hint: 'One sentence a tender committee would want, e.g. your contractor class or the categories you are approved for. Leave blank to hide it.'
+      - name: icon
+        label: Icon
+        widget: select
+        default: shieldCheck
+        options: [shieldCheck, clipboard, hardHat, building]
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+
+  # -------------------------------------------------------------------- faqs
+  - name: faqs
+    label: Questions & Answers
+    label_singular: Question
+    folder: src/content/faqs
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{question}}'
+    sortable_fields: [order, question]
+    fields:
+      - { name: question, label: Question, widget: string }
+      - { name: order, label: Sort order, widget: number, default: 100, value_type: int }
+      - { name: body, label: Answer, widget: markdown }

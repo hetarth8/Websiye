@@ -1,0 +1,158 @@
+---
+import { getCollection } from 'astro:content';
+import site from '../data/site.json';
+import Icon from './Icon.astro';
+
+const years = new Date().getFullYear() - site.founded;
+
+/** Split "1,056+" into the number to count and the decoration around it. */
+function parseStat(value: string) {
+  const match = value.match(/^([^\d]*)([\d,]+)(.*)$/);
+  if (!match) return { prefix: '', num: null as number | null, raw: value, suffix: '' };
+  return {
+    prefix: match[1],
+    num: Number(match[2].replace(/,/g, '')),
+    raw: match[2],
+    suffix: match[3],
+  };
+}
+
+// The single biggest figure the firm can claim, given the most visual weight.
+// Built area is the number an industrial client benchmarks first.
+const headline = {
+  value: '40+',
+  unit: 'lakh sq.ft.',
+  label: 'Industrial space built',
+  sub: 'Plus 15+ lakh sq.ft. of commercial space delivered',
+};
+
+// Both built-area figures live in the headline panel above, so they are kept
+// out of the grid rather than printed twice.
+const HEADLINE_LABELS = ['Industrial built', 'Commercial space'];
+/**
+ * The road card shows the SAME combined figure as the hero, the start window
+ * and the proof section — the owner asked for it to read "projects completed"
+ * rather than "200+ work orders". Derived exactly as Hero.astro derives it:
+ * road-category projects are excluded because they are already inside the
+ * road work-order count, so adding them would count them twice. site.json's
+ * "Road work completed" stat is left untouched — it is the input to this sum
+ * in four places, not something to overwrite.
+ */
+const allProjects = await getCollection('projects');
+const roadStat = site.stats.find((x) => x.label === 'Road work completed');
+const roadOrders = Number((roadStat?.value ?? '0').replace(/[^0-9]/g, ''));
+const buildingCount = allProjects.filter((p) => p.data.category !== 'road').length;
+const totalWorks = roadOrders + buildingCount;
+
+const stats = site.stats
+  .filter((s) => !HEADLINE_LABELS.includes(s.label))
+  .map((s) =>
+    s.label === 'Road work completed'
+      ? { value: `${totalWorks}+`, unit: '', label: 'Projects completed' }
+      : s,
+  )
+  .map((s) => ({ ...s, parsed: parseStat(s.value) }));
+---
+
+<section id="about" class="scroll-mt-24 bg-concrete py-20 md:py-28">
+  <div class="container-x">
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16" data-reveal-group>
+      <!-- Origin + the one figure that matters most, on a steel plate.
+
+           This panel was solid amber with CRIMSON type on it. That pairing
+           measures 3.52:1 — it failed WCAG AA outright at the "Track record"
+           label's size, and saturated-red-on-saturated-orange is the exact
+           mechanism that reads as comic: two near-neighbour hues at similar
+           value produce a vibrating edge the eye cannot resolve.
+           On steel the same hierarchy is carried by VALUE instead of by hue:
+           white 9.62:1 for the figure, white/70 5.71:1 for the supporting line,
+           amber-300 5.70:1 for the label. All three verified. -->
+      <div data-reveal>
+        <div class="title-block" data-reveal>
+          <div class="title-block__bar">
+            <span>Since {site.founded}</span>
+            <span class="title-block__meta">{years} years</span>
+          </div>
+        </div>
+        <p class="mt-6 font-display text-3xl uppercase leading-[1.05] text-ink-950 md:text-[2.6rem]">
+          One road crew in Daman set out to build South Gujarat. Today AHT leads{' '}
+          <span class="text-gradient">road, industrial and real-estate</span> development.
+        </p>
+
+        <div class="panel-light relative mt-9 overflow-hidden p-8 md:p-10">
+          
+          <div class="relative">
+            <p class="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-accent-600">
+              Track record
+            </p>
+            <p class="mt-3 flex flex-wrap items-baseline gap-x-3">
+              <span class="font-display text-6xl font-bold leading-none tabular-nums text-ink-950 md:text-7xl">
+                {headline.value}
+              </span>
+              <span class="font-display text-2xl font-semibold leading-none text-accent-700 md:text-3xl">
+                {headline.unit}
+              </span>
+            </p>
+            <p class="mt-3 text-lg font-semibold text-ink-950">{headline.label}</p>
+            <p class="mt-1 text-sm text-stone-600">{headline.sub}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- The rest of the record, as bold stat cards with depth. -->
+      <dl class="grid grid-cols-2 gap-4 sm:gap-5">
+        {
+          stats.map((stat) => (
+            <div
+              class="card group flex flex-col justify-between p-5 transition-all duration-300 hover:-translate-y-1 md:p-6"
+              data-reveal
+            >
+              <dt class="font-display text-4xl font-bold leading-none tabular-nums text-ink-950 md:text-5xl">
+                {/* A year is a date, not a quantity: it never counts up (it read
+                    "1877" halfway through). Everything else still does. */}
+                <span
+                  class="text-gradient"
+                  {...(stat.label.toLowerCase().includes('year')
+                    ? {}
+                    : {
+                        'data-countup': stat.parsed.num ?? undefined,
+                        'data-countup-prefix': stat.parsed.prefix,
+                        'data-countup-suffix': stat.parsed.suffix,
+                      })}
+                >
+                  {stat.value}
+                </span>
+                {stat.unit && (
+                  <span class="ml-1.5 font-display text-base font-semibold text-accent-700">
+                    {stat.unit}
+                  </span>
+                )}
+              </dt>
+              <dd class="mt-4 font-mono text-[0.72rem] uppercase leading-tight tracking-[0.12em] text-stone-600">
+                {stat.label}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <!-- People, as a slim confident strip. -->
+    <div class="mt-12 flex flex-wrap items-center gap-x-10 gap-y-4 border-t border-mist-200 pt-8">
+      {
+        site.people.map((p) => (
+          <p class="flex items-baseline gap-3">
+            <span class="font-display text-3xl font-bold leading-none text-gradient">{p.value}</span>
+            <span class="font-mono text-[0.78rem] uppercase tracking-[0.14em] text-stone-600">
+              {p.label}
+            </span>
+          </p>
+        ))
+      }
+      <p class="ml-auto flex items-center gap-2 font-mono text-[0.78rem] uppercase tracking-[0.14em] text-accent-700">
+        <Icon name="shieldCheck" class="h-4 w-4" />
+        {years} years · est. {site.founded}
+      </p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,39 @@
+---
+import site from '../data/site.json';
+import Icon from './Icon.astro';
+---
+
+<section class="bg-concrete pb-4 pt-14 md:pt-20">
+  <div class="container-x">
+    <div class="grid gap-10 md:grid-cols-[auto_1fr] md:items-center md:gap-16" data-reveal>
+      <div>
+        {/* Named for what the company actually is — seven divisions under one
+            contract — rather than asking whether the visitor needs a road
+            contractor, which only speaks to one of them. */}
+        <p class="font-display text-lg font-medium text-accent-700">
+          One contractor, ground to handover.
+        </p>
+        <a
+          href={site.phoneHref}
+          class="mt-2 flex min-h-11 items-center gap-3 font-display text-4xl font-bold tracking-tight text-ink-950 transition-colors hover:text-ink-950 md:text-5xl"
+        >
+          <Icon name="phone" class="h-8 w-8 shrink-0 text-accent-600" strokeWidth={1.5} />
+          {site.phone}
+        </a>
+        <p class="mt-2 text-sm text-stone-600">
+          or <a href={site.phoneAltHref} class="underline underline-offset-4 hover:text-accent-700"
+            >{site.phoneAlt}</a
+          >
+        </p>
+      </div>
+
+      <p class="max-w-2xl text-base leading-relaxed text-stone-600 md:border-l md:border-mist-200 md:pl-16">
+        Roads, industrial plants, commercial towers and turn-key homes — plus the quarries,
+        ready-mix and asphalt plants that feed them. Send drawings or a tender document and we come
+        back with a stage-wise estimate, item by item.
+      </p>
+    </div>
+
+    <hr class="mt-12 border-mist-200" />
+  </div>
+</section>

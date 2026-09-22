@@ -1,0 +1,3048 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   AHT design tokens — LUMINOUS SYSTEM
+
+   The brand amber and crimson are sampled from the actual logo artwork, not
+   chosen. Everything else is a Stripe/Apple/Linear-register system of white
+   grounds, an obsidian text ramp and an violet structural accent.
+
+   Contrast, COMPUTED with the WCAG relative-luminance formula, not asserted:
+     obsidian #0F172A on white ......... 17.85:1 AAA  headings, primary text
+     ink-800  #334155 on white ......... 10.35:1 AAA  strong body
+     stone-600 #475569 on white ........  7.58:1 AAA  body copy
+     ink-600  #64748B on white .........  4.76:1 AA   tertiary ONLY, never body
+     accent-600 #4F46E5 on white .......  6.29:1 AA   links, labels
+     obsidian on amber-500 (the CTA) ...  7.51:1 AAA
+     white on the obsidian panel ....... 17.85:1 AAA
+     white/72 on the obsidian panel ....  9.60:1 AAA  secondary on dark
+     amber-500 on the obsidian panel ...  7.51:1 AAA
+     accent-300 on the obsidian panel ..  8.96:1 AAA
+
+   THREE RULES THAT ARE LOAD-BEARING:
+     1. amber-500 as TEXT on white is 2.38:1 and FAILS. It is a FILL — the CTA
+        ground, a keyline, an icon chip. For amber type use amber-700 (4.84:1).
+     2. The hairline #E2E8F0 is 1.23:1 on white. That is correct for a
+        decorative card edge, but WCAG 1.4.11 requires 3:1 for the boundary of
+        a FORM CONTROL. Inputs and selects must use a slate at 3:1 or darker —
+        a near-identical bug already shipped here once, a chip outline at
+        1.47:1 that was invisible.
+     3. No saturated brand hue carries type on another saturated brand hue.
+        crimson on amber measured 3.52:1 and is exactly what read as "comic".
+   ========================================================================== */
+/* , not a bare @theme. Tailwind v4 PRUNES theme variables that no
+   utility class references, and several tokens here are consumed only from
+   @layer components rules — accent-300 was verified missing from the built CSS
+   before this was added. This file already fell into that trap once with
+   --gradient-brand, which is why that variable lives on :root.  emits
+   every declared variable unconditionally: a little more CSS, one fewer class
+   of silent failure. */
+@theme static {
+  /* ==========================================================================
+     ARCHITECTURAL SYSTEM — graphite, warm ivory, stone, one bronze accent.
+
+     The brief: premium, architectural, engineering-led, timeless — not
+     corporate-template, not neon, not rainbow. So the palette is the palette
+     of the materials the company builds with: graphite steel, warm ivory
+     plaster, concrete and stone, and a single metallic bronze used the way a
+     good building uses brass — sparingly, where the hand or the eye lands.
+     AHT's own amber (the logo) stays as the one signature highlight.
+
+     Token names are ROLES and several predate this palette (`concrete` is
+     the page ground, `accent` is the bronze, `steel` the dark bands). Every
+     text pairing below is measured, WCAG AA or better:
+       ink-950 on the page 16.3:1 · stone-600 body 8.4:1 · ink-600 5.5:1
+       accent-600 (text bronze) 5.5:1 on the page, 4.6:1 on the deepest band
+       accent-500 3.2:1 — FILLS, rules and large figures only, never body text
+     ========================================================================== */
+
+  /* --- grounds: warm ivory to stone ------------------------------------- */
+  --color-concrete: #f7f5f0;   /* the page: warm ivory, not screen-white */
+  --color-mist-50: #efebe3;    /* the alternating band */
+  --color-mist-100: #e8e3d9;   /* recessed wells, table stripes */
+  --color-mist-200: #dcd5c8;   /* decorative card edges */
+  --color-mist-300: #c9c1b2;   /* dividers */
+  --color-sand: #e6e0d5;       /* the deepest ground */
+
+  /* --- text: graphite -------------------------------------------------- */
+  --color-ink-950: #16181c;    /* soft black: every heading */
+  --color-ink-900: #23262b;
+  --color-ink-800: #33363c;
+  --color-ink-700: #4a4e55;
+  --color-ink-600: #5f636a;
+  --color-stone-600: #4b4842;  /* body copy, a warm grey */
+  --color-stone-700: #38352f;
+
+  /* --- structure -------------------------------------------------------- */
+  --color-hairline: #e2dcd1;   /* decorative edges ONLY */
+  --color-border: #cfc7b8;
+  /* Form controls only: 3:1 against the white of a field's surround. */
+  --color-line-control: #857e6f;
+
+  /* --- bronze: the one accent ------------------------------------------ */
+  --color-accent-50: #faf6ee;
+  --color-accent-100: #f3eada;
+  --color-accent-200: #e7d6b8;
+  --color-accent-300: #d6be93;
+  --color-accent-400: #c4a46f;  /* champagne */
+  --color-accent-500: #a88450;  /* bronze: fills, rules, large figures */
+  --color-accent-600: #775832;  /* bronze text */
+  --color-accent-700: #634829;
+  --color-accent-800: #4e3920;
+  --color-accent-900: #3a2b18;
+  --color-accent-950: #241b10;
+
+  /* --- dark bands: graphite ------------------------------------------- */
+  --color-steel-800: #111214;
+  --color-steel-700: #1a1c1f;   /* ivory on it 16.9:1 */
+  --color-steel-600: #2a2d31;
+
+  /* --- brand, retained: the logo's own amber, the signature highlight -- */
+  --color-amber-50: #fff7ed;
+  --color-amber-100: #ffedd5;
+  --color-amber-200: #fed7aa;
+  --color-amber-300: #fdba74;
+  --color-amber-400: #fb923c;
+  --color-amber-500: #f49000;
+  --color-amber-600: #d17c00;
+  --color-amber-700: #96500a;   /* text-safe amber */
+  --color-amber-800: #7c3d08;
+
+  --color-crimson-500: #b81417;
+  --color-crimson-600: #9d0f12;
+  --color-crimson-700: #7c0c0e;
+
+  /* --- type ------------------------------------------------------------- */
+  --font-display: var(--fontfamily-display);
+  --font-condensed: var(--fontfamily-display);
+  --font-body: var(--fontfamily-body);
+  --font-mono: var(--fontfamily-body);
+
+  /* --- radii: architectural, restrained -------------------------------- */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+  --radius-2xl: 14px;
+  --radius-3xl: 18px;
+
+  --text-display: 4rem;
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.03em;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ELEVATION — warm graphite, two layers: a contact shadow and a soft one. */
+  --shadow-xs: 0 1px 2px rgb(22 24 28 / 0.05);
+  --shadow-card: 0 1px 2px rgb(22 24 28 / 0.05), 0 6px 18px -6px rgb(22 24 28 / 0.1);
+  --shadow-lift: 0 2px 4px rgb(22 24 28 / 0.06), 0 18px 36px -12px rgb(22 24 28 / 0.18);
+  --shadow-float: 0 4px 8px rgb(22 24 28 / 0.06), 0 28px 56px -16px rgb(22 24 28 / 0.24);
+}
+
+/* The signature ramp — the yellow-to-green shift that ties the whole site
+   together. Deliberately NOT inside @theme: Tailwind prunes theme variables it
+   can't see used by a utility class, and these are referenced from component
+   CSS and from inline style attributes, which it does not scan. Defining them
+   on :root guarantees they are always emitted. */
+:root {
+  /* THE GLASS SYSTEM — one recipe for every surface that sits on the city:
+     cards, panels, the welcome window's tiles, title plate and action bar.
+     Warm ivory at high opacity (the city is cleared beneath every surface, so
+     the transparency is a sheen, not a see-through), a white lit top edge, a
+     graphite hairline to seat it on the page, and one radius scale. Blur is
+     reserved for the welcome window, where there are few pieces. */
+  --glass-fill: rgb(251 250 247 / 0.9);
+  --glass-fill-strong: rgb(251 250 247 / 0.96);
+  --glass-edge: rgb(22 24 28 / 0.08);
+  --glass-light: rgb(255 255 255 / 0.85);
+  --glass-radius: 10px;
+  --glass-radius-lg: 14px;
+  --glass-shadow: 0 1px 2px rgb(22 24 28 / 0.05), 0 10px 30px -14px rgb(22 24 28 / 0.18);
+  /* A tight single-family amber sheen — used ONLY for thin decorative lines
+     (the scroll-progress hairline, section rules, the eyebrow tick). The old
+     orange→crimson ramp crossed two hues, which is exactly the shift that reads
+     as a cheap gradient; colour blocks and text are solid now, not this. */
+  --gradient-brand: linear-gradient(90deg, #a88450 0%, #c4a46f 55%, #a88450 100%);
+  --gradient-brand-soft: linear-gradient(120deg, #faf6ee 0%, #f3eada 55%, #ece0c9 100%);
+}
+
+/* ============================================================================
+   Base
+   ========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Sticky header is 72px; keeps anchor targets from hiding underneath. */
+    scroll-padding-top: 5.5rem;
+    /* Safari rescales text in landscape without this; 100% pins it. */
+    -webkit-text-size-adjust: 100%;
+    /* iOS paints a grey box over any tapped link by default, which makes a
+       carefully-built site feel cheap on a phone. Focus rings are untouched. */
+    -webkit-tap-highlight-color: transparent;
+    /* The welcome window locks scrolling, which on Windows removes the
+       scrollbar; unlocking brought it back and narrowed every section by 17px
+       at the very moment the site appeared — every canvas and scroll trigger
+       re-measured at once. Keeping the gutter keeps the layout still. */
+    scrollbar-gutter: stable;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    /* Concrete, not white. */
+    background-color: var(--color-concrete);
+    color: var(--color-ink-900);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    /* Barlow's default figures are proportional; tabular reads better in the
+       stat strip and project years. */
+    font-variant-numeric: proportional-nums;
+    /* Smooth the weight of the condensed display face — heavy uppercase Barlow
+       renders cleaner grayscale-antialiased, especially white-on-charcoal. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Never remove the focus ring — replace it with a stronger one. Forest green
+     holds up on white, on the mist bands and over photography. */
+  :focus-visible {
+    outline: 3px solid var(--color-accent-600);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-amber-200);
+    color: var(--color-ink-950);
+  }
+
+  /* Images never overflow their column. */
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* ============================================================================
+   Components
+   ========================================================================== */
+@layer components {
+  /* max() with the safe-area inset keeps content clear of the rounded corners
+     and the Dynamic Island when an iPhone is held in landscape, where the inset
+     is on the left or right edge. Portrait insets are 0, so the normal padding
+     applies untouched. */
+  .container-x {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
+  }
+
+  @media (min-width: 768px) {
+    .container-x {
+      padding-inline: max(2rem, env(safe-area-inset-left)) max(2rem, env(safe-area-inset-right));
+    }
+  }
+
+  /* Clears the iPhone home indicator on whatever sits at the bottom of the
+     page. Falls back to the plain padding everywhere else. */
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* Asymmetric by design. Equal top and bottom padding measures correctly but
+     reads bottom-light, because a section's heading sits high and its content
+     trails off — the eye wants a little more air after the last line than
+     before the first. ~10% more at the bottom is the standard optical fix. */
+  /* Tightened. At 7rem/7.75rem the page was mostly air, which reads as thin
+     rather than as generous once the sections themselves are ruled. */
+  .section {
+    padding-block: 3.5rem 4rem;
+  }
+
+  @media (min-width: 768px) {
+    .section {
+      padding-block: 5rem 5.5rem;
+    }
+  }
+
+  /* Wide-tracked monospace index marker — [ 01/07 ]. Borrowed as an idea from
+     editorial print: it numbers the page's content so a long scroll reads as a
+     sequence you are moving through, rather than a stack of separate slides. */
+  /* Steel, not crimson. Every section label being saturated red is what made
+     the page read "flashy": the accent appeared 69 times, so it stopped being
+     an accent and became the voice of the site. Structural labels now speak in
+     the same metal as the rules and plates (steel-700 on concrete is 7.64:1,
+     on mist-50 8.60:1); crimson is held back for the few places that genuinely
+     need to be singled out. */
+  .index-label {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 0.8125rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--color-steel-700);
+  }
+
+  .index-label-light {
+    color: var(--color-accent-300);
+  }
+
+  /* Oversized statement type. Sections that make a claim get this instead of a
+     heading-plus-card-grid, which is the layout that made the page feel like a
+     deck in the first place. */
+  /* Space Grotesk carries far more width than the condensed face did, so the
+     statement scale is pulled back and tracked tighter to compensate. */
+  .statement {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    font-size: clamp(2.25rem, 6.4vw, 5.5rem);
+    text-wrap: balance;
+  }
+
+  /* ==========================================================================
+     THE TITLE BLOCK — the structural change that answers "it looks basic".
+
+     Every section used to open the same way: an eyebrow, then an enormous
+     heading, then a paragraph, all stacked in ONE left-hand column with the
+     entire right half of the screen left empty. That is what read as cheap —
+     not the colour. A huge word floating in dead air is a template's tell; a
+     drawing sheet, by contrast, is RULED and its space is accounted for.
+
+     So a section now opens like a title block on a drawing:
+       - a hard rule straight across the measure,
+       - a mono designation sitting on that rule,
+       - then the heading and the lead side by side, so the right-hand column
+         is doing work instead of being empty.
+     ========================================================================== */
+  .title-block {
+    /* The rule itself is ::before, so it can be drawn. Padding-top leaves room
+       for it to sit on the block's top edge. */
+    border-top: 1px solid transparent;
+    padding-top: 0.85rem;
+    position: relative;
+    /* Heading and lead go side by side on THIS block's width, not the window's:
+       in a half-width sticky column (Government, Contact, FAQ) a one-word
+       title such as "Government" is wider than its half and ran into the lead.
+       A size container has no width of its own content, so where the block is
+       a flex item (beside a button, in Flagship projects) it is told to grow —
+       otherwise it collapses to nothing. */
+    container-type: inline-size;
+    flex: 1 1 36rem;
+  }
+
+  /* The rule DRAWS ITSELF as the section arrives — left to right, like a line
+     being struck on a drawing. It is the site's signature motion, and it means
+     something rather than decorating: the page is presented as a set of sheets,
+     and this is the sheet being ruled up.
+
+     The dependency is deliberately INVERTED. The obvious way round — draw the
+     rule only when `.js-reveal` is present — fails in two real cases: motion.ts
+     removes that class as a safety net if nothing has revealed within 2500ms,
+     and it is never added at all without JavaScript. Either way the rule would
+     vanish. So the rule is drawn by default and is only RETRACTED while the
+     reveal system is both running and has not yet reached this block. No JS,
+     failed JS, or a tripped safety net all leave a fully ruled page. */
+  .title-block::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--color-border);
+    transform: scaleX(1);
+    transform-origin: left center;
+    transition: transform 1000ms var(--ease-out-quint);
+  }
+
+  .js-reveal .title-block:not(.is-revealed)::before {
+    transform: scaleX(0);
+  }
+
+  .title-block--light::before {
+    background-color: rgb(255 255 255 / 0.28);
+  }
+
+  .js-reveal .title-block:not(.is-revealed) .title-block__lead {
+    background-size: 2px 0%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .title-block::before,
+    .js-reveal .title-block:not(.is-revealed)::before {
+      transform: scaleX(1);
+      transition: none;
+    }
+
+    .title-block__lead,
+    .js-reveal .title-block:not(.is-revealed) .title-block__lead {
+      background-size: 2px 100%;
+      transition: none;
+    }
+  }
+
+  /* The designation row that sits ON the rule: label at the left, optional
+     meta cell pushed to the right. */
+  .title-block__bar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-steel-700);
+  }
+
+  /* The designation on the right of the rule — the sheet's "drawn by" cell. */
+  .title-block__meta {
+    color: var(--color-stone-600);
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+  }
+
+  .title-block__body {
+    margin-top: 1.75rem;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @container (min-width: 48rem) {
+    .title-block__body {
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      align-items: end;
+      gap: 3rem;
+      margin-top: 2.25rem;
+    }
+  }
+
+  .title-block__title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 0.94;
+    letter-spacing: -0.03em;
+    /* Deliberately smaller than .statement. The oversized version was shouting
+       across an empty screen; at this size it sits in a composition. */
+    font-size: clamp(2rem, 4.6vw, 3.5rem);
+    text-wrap: balance;
+    color: var(--color-ink-950);
+  }
+
+  /* The lead moves into the right column and is tied to a rule, so the two
+     halves read as one ruled block rather than as text with a gap beside it. */
+  .title-block__lead {
+    /* The keyline is painted as a background so it can GROW downward as the
+       block settles; the border is only a transparent gutter reserving its
+       width. Full height by default, retracted only while a reveal is pending
+       — see the inversion note on .title-block::before. */
+    border-left: 2px solid transparent;
+    background-image: linear-gradient(var(--color-accent-500), var(--color-accent-400));
+    background-repeat: no-repeat;
+    background-size: 2px 100%;
+    background-position: left top;
+    transition: background-size 800ms var(--ease-out-quint) 200ms;
+    padding-left: 1.15rem;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: var(--color-stone-700);
+    text-wrap: pretty;
+  }
+
+  /* On the steel plate. */
+  /* --light only recolours; the rule element is shared. */
+
+  .title-block--light .title-block__bar {
+    color: var(--color-accent-300);
+  }
+
+  .title-block--light .title-block__meta {
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  .title-block--light .title-block__title {
+    color: #ffffff;
+  }
+
+  .title-block--light .title-block__lead {
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  /* Section label. The rule beside it carries the full yellow-to-green ramp,
+     which is what ties the sections together visually. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-steel-700);
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 2.25rem;
+    height: 3px;
+    border-radius: 2px;
+    background-image: var(--gradient-brand);
+  }
+
+  .eyebrow-light {
+    color: var(--color-accent-300);
+  }
+
+  /* Emphasis words and figures: SOLID deep crimson, never a gradient fill.
+     Gradient-coloured text is the clearest "templated/cheap" tell there is —
+     one confident colour reads far more expensive. On dark grounds, use
+     `text-amber-400` directly instead of this class. */
+  /* Misnamed for historical reasons — it is a SOLID colour, not a gradient
+     (gradient-filled text is one of the clearest templated tells, so the fill
+     was removed long ago and only the class name survived). It carries 16
+     emphasis figures, which is why it is the single highest-leverage colour in
+     the file. Indigo-700 is 7.90:1 on white. */
+  .text-aurora,
+  .text-aurora .split-word {
+    color: var(--color-accent-700);
+    /* Brushed bronze: one metal, two tones, never a rainbow. */
+    background-image: linear-gradient(100deg, #5f4524 0%, #8c6a3a 48%, #6e5230 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient {
+    color: var(--color-accent-600);
+  }
+
+  /* Thin gradient rule used to close sections. */
+  .rule-brand {
+    height: 4px;
+    border-radius: 999px;
+    background-image: var(--gradient-brand);
+  }
+
+  /* Gradient fills as classes rather than inline style attributes.
+     This matters: the site ships a hash-based CSP, and while Astro hashes
+     every <style> block it emits, a style="..." attribute cannot be hashed at
+     all. Anything set inline is silently dropped by the browser — so all
+     decorative fills have to live in a stylesheet. */
+  /* Solid amber fill — the ramp used to live here, but flat colour reads
+     cleaner on chips, bars and icon tiles than a gradient does. */
+  /* Solid fills that are not labels — the government value bars and the
+     division hover strips. Indigo, matching the accent; the light tint is for
+     label chips, which carry a glyph and need to stay quiet. */
+  .bg-brand-ramp {
+    background-color: var(--color-accent-600);
+  }
+
+  .bg-brand-ramp-soft {
+    background-image: var(--gradient-brand-soft);
+  }
+
+  .bg-dot-grid {
+    background-image: radial-gradient(circle, #ffffff 1.2px, transparent 1.3px);
+    background-size: 14px 14px;
+  }
+
+
+  /* Buttons — 44px minimum touch target on every variant. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.85rem 1.75rem;
+    /* Hard edges. A pill button is the most template-looking control there is;
+       a square one reads as engineered. */
+    border-radius: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      background-color 200ms var(--ease-out-quint),
+      color 200ms var(--ease-out-quint),
+      transform 200ms var(--ease-out-quint);
+  }
+
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  /* Solid hi-vis amber — flat, confident, and true to a builder's own colour.
+     A flat colour block reads more premium than a gradient; hover just warms
+     and lifts it. */
+  /* Amber stays the primary button — it is the logo colour and a button is a
+     small, deliberate surface. What goes is the coloured HALO under it: a
+     blurred amber glow around a flat sharp-cornered control is the same
+     mismatch as a drop shadow on flat design. The hard offset replaces it, and
+     the timing/transform are untouched so the motion is exactly as approved. */
+  /* The primary CTA keeps the brand amber — it is the logo colour, and a
+     button is a small, deliberate surface. Obsidian label on it is 7.51:1.
+     The heavy outline and hard offset are gone; a hairline of the fill's own
+     darker step plus ambient depth is what makes it read as a real control. */
+  /* Graphite, the colour of steel: the most expensive-looking control is the
+     quietest one. A bronze hairline lights up on hover. */
+  .btn-primary {
+    background-color: var(--color-ink-950);
+    background-image: linear-gradient(180deg, #2a2d32 0%, #16181c 100%);
+    color: #f7f5f0;
+    border: 1px solid var(--color-ink-950);
+    border-radius: var(--radius-md);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.08),
+      0 1px 2px 0 rgb(22 24 28 / 0.25),
+      0 10px 24px -10px rgb(22 24 28 / 0.5);
+    transition:
+      box-shadow 220ms var(--ease-out-quint),
+      transform 220ms var(--ease-out-quint),
+      background-color 220ms var(--ease-out-quint);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-ink-900);
+    box-shadow:
+      inset 0 0 0 1px rgb(196 164 111 / 0.7),
+      0 2px 4px 0 rgb(22 24 28 / 0.25),
+      0 18px 34px -12px rgb(22 24 28 / 0.55);
+    transform: translateY(-2px);
+  }
+
+  /* The secondary solid is now violet, the structural accent. */
+  .btn-solid {
+    background-color: var(--color-accent-600);
+    color: #ffffff;
+    border: 1px solid var(--color-accent-700);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    transition:
+      background-color 220ms var(--ease-out-quint),
+      box-shadow 220ms var(--ease-out-quint),
+      transform 220ms var(--ease-out-quint);
+  }
+
+  .btn-solid:hover {
+    background-color: var(--color-accent-700);
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-2px);
+  }
+
+  /* For dark or photographic grounds. */
+  .btn-outline {
+    border: 2px solid currentColor;
+    color: #ffffff;
+  }
+
+  .btn-outline:hover {
+    background-color: #ffffff;
+    color: var(--color-ink-950);
+  }
+
+  /* Refined secondary for white and mist grounds: a quiet ink hairline that
+     reveals crimson on hover. One accent at a time reads more considered than
+     an amber border wrapped around crimson text. */
+  .btn-outline-dark {
+    border: 1.5px solid rgb(27 24 23 / 0.2);
+    color: var(--color-ink-950);
+  }
+
+  .btn-outline-dark:hover {
+    border-color: var(--color-accent-700);
+    color: var(--color-accent-700);
+  }
+
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+    transition: gap 200ms var(--ease-out-quint);
+  }
+
+  .link-arrow:hover {
+    gap: 0.875rem;
+  }
+
+  /* When the arrow link is genuinely clickable it needs a 44px target. The
+     same class is also used as a plain <span> inside project cards, where the
+     card's own overlay link is the target — those stay compact. */
+  a.link-arrow {
+    min-height: 2.75rem;
+  }
+
+  /* ==========================================================================
+     Rich & modern layer — cards with real depth, unified imagery, and a couple
+     of drawn "engineering" marks. This is what lifts the page out of the flat,
+     hairline-only look that read as basic.
+     ========================================================================== */
+
+  /* The card primitive, rebuilt structural: a hard ink rule instead of a soft
+     shadow, and a solid offset shadow on hover so the block reads as a physical
+     plate lifting off the sheet rather than a floating web card. */
+  /* A surface, not an outline. The 1.5px near-black border plus a zero-blur
+     offset shadow was the single most "drawn" thing on the site; a hairline
+     edge with two-layer ambient depth is what reads as a real card. The
+     TRANSITION TIMING IS UNCHANGED — the motion was approved, only the
+     properties it animates have been refined, and the hover translate is now a
+     straight 2px lift rather than a diagonal shove. */
+  /* Glass: translucent and lit along the top edge. Every section now stands on
+     the city, and an opaque white card was a hole cut in it. The scene is
+     erased beneath every word (terrain.ts, the shield), so legibility never
+     depends on the card. There is deliberately NO backdrop blur here: a blur
+     over an animating canvas is recomposited every frame for every card, and
+     with sixty-odd cards on the home page the page could not finish rendering.
+     The full blurred glass lives in the welcome window, where there are few
+     pieces and it is the showcase. */
+  .card {
+    background-color: var(--glass-fill);
+    border-radius: var(--glass-radius);
+    border: 1px solid var(--glass-edge);
+    box-shadow:
+      inset 0 1px 0 var(--glass-light),
+      var(--glass-shadow);
+    transition:
+      transform 260ms var(--ease-out-quint),
+      box-shadow 260ms var(--ease-out-quint),
+      border-color 260ms var(--ease-out-quint);
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent-200);
+    box-shadow:
+      0 2px 4px rgb(22 24 28 / 0.04),
+      0 16px 34px -12px rgb(140 106 58 / 0.28);
+  }
+
+  /* Amber variant — a solid hi-vis field, used for the one block per section
+     that should stop the eye. */
+  .card-amber {
+    background-color: var(--color-amber-500);
+    border-color: var(--color-ink-950);
+  }
+
+  /* Unified image treatment. The source photos are weak and inconsistent, so
+     every one is cropped to a single ratio and fills its frame; a component
+     sets the ratio with an aspect-* utility. This alone is most of why the
+     imagery reads as one intentional set rather than a scrapbook. */
+  .img-frame {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-mist-100);
+  }
+
+  .img-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 700ms var(--ease-out-quint);
+  }
+
+  .group:hover .img-frame img {
+    transform: scale(1.05);
+  }
+
+  /* THE PROJECT CARD — the one card every project list on the site uses (the
+     archive, the home page, related projects, division pages). One shape, one
+     glass, one radius, whatever it holds. The picture keeps its proportions:
+     cropped to fill a 4:3 frame, never stretched. */
+  .project-card {
+    overflow: hidden;
+    background-color: var(--glass-fill-strong);
+    border: 1px solid var(--glass-edge);
+    border-radius: var(--glass-radius-lg);
+    box-shadow:
+      inset 0 1px 0 var(--glass-light),
+      var(--glass-shadow);
+    transition:
+      transform 320ms var(--ease-out-quint),
+      box-shadow 320ms var(--ease-out-quint);
+  }
+
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 1px 0 var(--glass-light),
+      var(--shadow-lift);
+  }
+
+  .project-card:focus-within {
+    outline: 3px solid var(--color-accent-600);
+    outline-offset: 3px;
+  }
+
+  .project-card__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background-color: var(--color-mist-100);
+    border-bottom: 1px solid var(--glass-edge);
+  }
+
+  .project-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 900ms var(--ease-out-quint);
+  }
+
+  .project-card:hover .project-card__media img {
+    transform: scale(1.04);
+  }
+
+  .project-card__go {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-mist-300);
+    color: var(--color-ink-950);
+    transition:
+      background-color 220ms var(--ease-out-quint),
+      color 220ms var(--ease-out-quint),
+      border-color 220ms var(--ease-out-quint),
+      transform 220ms var(--ease-out-quint);
+  }
+
+  .project-card:hover .project-card__go {
+    background-color: var(--color-ink-950);
+    border-color: var(--color-ink-950);
+    color: #f7f5f0;
+    transform: translateX(2px);
+  }
+
+  .project-card[hidden] {
+    display: none;
+  }
+
+  /* A project's photograph: framed, at its own proportions. */
+  .project-figure {
+    overflow: hidden;
+    border: 1px solid var(--glass-edge);
+    border-radius: var(--glass-radius-lg);
+    background-color: var(--color-mist-100);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* Legibility wash for text laid over a photo — a bottom-up ink gradient with
+     a faint warm cast, so white type clears contrast whatever the photo does. */
+  .img-shade::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgb(20 17 15 / 0.92) 0%, rgb(20 17 15 / 0.35) 42%, transparent 72%),
+      linear-gradient(to top, rgb(140 106 58 / 0.14), transparent 55%);
+  }
+
+  /* 45° engineering hatch — a drawn motif borrowed from section drawings, used
+     as a texture block behind display numbers and section corners. */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgb(168 132 80 / 0.16) 0,
+      rgb(168 132 80 / 0.16) 1.5px,
+      transparent 1.5px,
+      transparent 9px
+    );
+  }
+
+  /* ==========================================================================
+     THE METAL PLATE.
+
+     The owner's brief was "make it more rugged and maybe some metalic effects
+     could be used", after five sections of full-strength amber read to them as
+     a comic. This is what replaces those amber grounds.
+
+     Metallic done as gloss, chrome or bevel is a 2008 skeuomorphic tell.
+     Metallic done as a low-contrast directional grain plus a milled edge is a
+     material cue and stays quiet. So: no radial highlight, no bevel, no
+     border-radius, no chrome ramp.
+
+     The constraint that makes it safe for TEXT is that the total luminance
+     travel across the whole plane is kept under ~3%. That means white does not
+     merely pass on the average colour — it passes at the sheen's lightest point
+     AND at its darkest. Measured on steel-700: white 9.62:1, white/70 5.71:1.
+     ========================================================================== */
+  /* THE DARK PANEL.
+
+     Was brushed steel with a milled edge. It is now obsidian carrying a soft
+     violet inner light — the Linear/Stripe treatment, where a dark section is
+     punctuation against white rather than a material sample.
+
+     The two gradients are both very low amplitude on purpose: an aurora that
+     lifts the top-left corner, and a fine vertical sheen. Total luminance
+     travel stays small enough that white text is legible at the panel's
+     lightest AND darkest point, not merely on its average — 17.85:1 at the
+     base colour. */
+  .plate-steel {
+    background-color: var(--color-steel-700);
+    background-image:
+      radial-gradient(110% 90% at 8% 0%, rgb(168 132 80 / 0.42) 0%, transparent 58%),
+      radial-gradient(80% 80% at 96% 100%, rgb(196 164 111 / 0.28) 0%, transparent 55%),
+      radial-gradient(60% 60% at 62% 38%, rgb(140 106 58 / 0.16) 0%, transparent 70%),
+      linear-gradient(180deg, rgb(255 255 255 / 0.04) 0%, rgb(255 255 255 / 0) 42%);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.07);
+  }
+
+  /* The cursor-tracked wash. interactions.ts has been publishing --mx/--my on
+     these elements all along, but no rule ever consumed them — the effect was
+     wired and dead. Four elements carry .spot, so this is a free micro-
+     interaction with no DOM change. Gated on reduced-motion. */
+  .spot {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .spot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      22rem 22rem at var(--mx, 50%) var(--my, 50%),
+      rgb(168 132 80 / 0.09) 0%,
+      rgb(168 132 80 / 0) 62%
+    );
+    transition: opacity 300ms var(--ease-out-quint);
+  }
+
+  .spot:hover::after,
+  .spot:focus-within::after {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spot::after {
+      display: none;
+    }
+  }
+
+  /* THE LIGHT PANEL — for in-content cards.
+
+     The dark treatment is kept for the two full-bleed BANDS (the Statement
+     section and the credentials strip), where a dark plate is punctuation
+     against white. Inside a light section, though, a dark block reads heavy
+     rather than deliberate — so the cards that used to be steel become
+     luminous surfaces instead: white, a hairline edge, and a whisper of the
+     violet accent in the corner so they are not merely blank. */
+  .panel-light {
+    background-color: var(--glass-fill-strong);
+    background-image: radial-gradient(120% 90% at 0% 0%, rgb(214 190 147 / 0.1) 0%, transparent 60%);
+    border: 1px solid var(--glass-edge);
+    border-radius: var(--glass-radius-lg);
+    box-shadow:
+      inset 0 1px 0 var(--glass-light),
+      var(--glass-shadow);
+  }
+
+  /* Phones and tablets: denser, where screens are small and bright sunlight is
+     common. Anyone who has asked for less transparency gets solid white. */
+  @media (max-width: 1023px) {
+    .card,
+    .panel-light {
+      background-color: var(--glass-fill-strong);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .card,
+    .panel-light {
+      background-color: #ffffff;
+    }
+  }
+
+  /* Tooth for the plate. The old .hatch-light at 0.06/1.5px/9px read as
+     stripes; at 0.035/1px/7px it reads as milled surface and stays inside the
+     3% luminance-travel ceiling that keeps white legible. */
+  .hatch-mill {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgb(255 255 255 / 0.035) 0,
+      rgb(255 255 255 / 0.035) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  }
+
+  /* AMBER, DEMOTED FROM GROUND TO MARK.
+     The brand colour is sampled from the company's own logo and has to stay
+     visible — but as roughly 3% of the pixels, not 100% of a section. A 4px
+     keyline is hi-vis machine livery; a full-bleed field is a comic panel.
+
+     Two variants exist because of a measurement: amber-500 on concrete is
+     1.89:1, which fails even the 3:1 non-text floor. So a plain amber keyline
+     is DECORATION and must never be the only thing distinguishing anything.
+     When the mark has to carry meaning on a light ground, use the -strong
+     variant (amber-700 #96500a, 4.84:1 on concrete). */
+  .mark-amber {
+    border-left: 4px solid var(--color-accent-400);
+    padding-left: 0.875rem;
+  }
+
+  .mark-amber-strong {
+    border-left: 4px solid var(--color-accent-700);
+    padding-left: 0.875rem;
+  }
+
+  /* The one elevation idiom. Zero blur, so it claims no light source and
+     cannot conflict with a flat sharp-cornered surface — it reads as a stamped
+     plate or print registration. Replaces the soft 48px --shadow-lift. */
+  /* Kept as a NAME so the 7 markup call sites need no edit, but it is now an
+     ambient lift rather than a print-registration offset. */
+  .shadow-press {
+    box-shadow: var(--shadow-lift);
+  }
+
+  .shadow-press-steel {
+    box-shadow: var(--shadow-lift);
+  }
+
+  .hatch-light {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgb(255 255 255 / 0.06) 0,
+      rgb(255 255 255 / 0.06) 1.5px,
+      transparent 1.5px,
+      transparent 9px
+    );
+  }
+
+  /* Blueprint grid for dark grounds — replaces the old white dot grid, and
+     reads as drafting paper rather than decoration. */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* The same drafting grid for LIGHT grounds. The white-line version above is
+     invisible once the page stops being dark, so anywhere the grid survives the
+     move to a light palette has to use ink lines instead. Kept very faint: on a
+     pale ground a grid reads much louder than the same alpha does on a dark
+     one, and this is meant to be felt as paper tooth, not seen as a table. */
+  .blueprint-grid-ink {
+    background-image:
+      linear-gradient(rgb(27 24 23 / 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(27 24 23 / 0.055) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Calm register: card and item titles set in normal-case Barlow, so the
+     uppercase condensed display has something quieter to contrast against
+     instead of everything shouting. */
+  .title-plain {
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  /* Monumental figures for the dark record band. */
+  .figure-xl {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 0.86;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(3.25rem, 11vw, 9rem);
+  }
+
+  /* Diagonal top edge for a section — a hard engineered transition in place of
+     the soft consumer-web swoosh. Applied to a section's ::before spacer. */
+  .edge-notch {
+    clip-path: polygon(0 2.2rem, 100% 0, 100% 100%, 0 100%);
+  }
+
+  /* ==========================================================================
+     STRUCTURAL — the pieces that make this read as an engineering document
+     rather than a marketing page.
+     ========================================================================== */
+
+
+  /* ==========================================================================
+     Film grain. A fixed, non-interactive layer of fine noise over the whole
+     page. It is the cheapest way to stop large flat colour fields reading as
+     flat vector — the concrete ground, the ink bands and the amber blocks all
+     pick up a faint tooth, like ink on a drawing sheet rather than a screen
+     fill. Kept at 3.5% so it is felt and not seen.
+
+     The noise is an inline SVG turbulence, so it costs no request and needs no
+     asset. It lives in the stylesheet rather than a style attribute because the
+     site ships a hash-based CSP, which cannot hash inline style attributes; the
+     data: URI is permitted by `img-src 'self' data:`.
+     ========================================================================== */
+  /* ATMOSPHERE.
+
+     A pure-white page with nothing on it reads as unfinished rather than
+     minimal — the owner's note was that it "looks too basic plain and white".
+     This layer is what stops that: a very fine drafting grid at 2.5% plus the
+     existing paper tooth, fixed so it does not scroll with the content and
+     therefore reads as the surface the page is printed on.
+
+     It sits ABOVE the sections, so everything here is held at a few percent —
+     enough to feel, not enough to tint type. Obsidian is 17.85:1 and has the
+     headroom. */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 1;
+    background-image:
+      linear-gradient(rgb(22 24 28 / 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(22 24 28 / 0.025) 1px, transparent 1px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    background-size: 72px 72px, 72px 72px, 160px 160px;
+  }
+
+  /* Ambient light. Two soft blooms anchored to the viewport corners give the
+     white ground depth without putting a colour on it. Fixed, so the page
+     feels lit rather than painted. */
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(58rem 42rem at 6% -12%, rgb(214 190 147 / 0.14), transparent 62%),
+      radial-gradient(46rem 36rem at 98% 3%, rgb(255 255 255 / 0.5), transparent 58%),
+      radial-gradient(52rem 40rem at 52% 112%, rgb(196 164 111 / 0.08), transparent 60%);
+    /* The light moves, very slowly, so the page never reads as painted. */
+    will-change: transform;
+    animation: aurora-drift 48s ease-in-out infinite alternate;
+  }
+
+  /* Retina screens render the same tile at half the physical size, which makes
+     the grain read as a finer, almost invisible dust; scaling the tile up keeps
+     the texture the same apparent size everywhere. */
+  @media (min-resolution: 2dppx) {
+    .grain {
+      background-size: 220px 220px;
+    }
+  }
+
+
+  /* Primary nav. The current route carries a short amber rule beneath it —
+     drawn with a scaled pseudo-element so it can also be used as the hover
+     tell, wiping in from the left instead of appearing. */
+  .nav-link {
+    position: relative;
+    padding-block: 0.35rem;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-accent-600);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 260ms var(--ease-out-quint);
+  }
+
+  .nav-link:hover::after,
+  .nav-link.is-current::after {
+    transform: scaleX(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link::after {
+      transition: none;
+    }
+  }
+
+
+
+
+  /* ==========================================================================
+     Organisation tree.
+
+     The connectors are real drawn rules, not decoration: a drop from the owner,
+     a horizontal bus, and a drop into each function. That is what makes it read
+     as a chart on a drawing sheet rather than as four cards that happen to sit
+     under a heading.
+
+     The bus has to stop at the CENTRE of the first and last branch, not at the
+     edge of the grid, or it overshoots into empty space. That inset is
+     50% / column-count, which depends on how many branches actually have people
+     in them — so the count is published as a data-cols attribute and the inset
+     is selected from it here. It is done this way, rather than with an inline
+     style, because the site ships a hash-based CSP: a style="..." attribute
+     cannot be hashed and the browser drops it silently.
+     ========================================================================== */
+  .org-head {
+    position: relative;
+    max-width: 30rem;
+    margin-inline: auto;
+  }
+
+  /* Drop out of the owner's box into the bus below. */
+  .org-head::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 1.5px;
+    height: 2.5rem;
+    background-color: var(--color-ink-950);
+  }
+
+  .org-branches {
+    --org-gap: 1rem;
+    position: relative;
+    display: grid;
+    gap: var(--org-gap);
+    margin-top: 2.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .org-branch {
+    position: relative;
+  }
+
+  /* Single column: no bus, just a short link between stacked boxes, so the
+     chart reads as a chain rather than as a broken diagram. */
+  .org-branch:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    width: 1.5px;
+    height: 1rem;
+    background-color: var(--color-ink-950);
+  }
+
+  @media (min-width: 640px) {
+    .org-branches {
+      --org-gap: 1.25rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .org-branches {
+      grid-template-columns: repeat(var(--org-cols, 4), minmax(0, 1fr));
+    }
+
+    .org-branches[data-cols='2'] { --org-cols: 2; }
+    .org-branches[data-cols='3'] { --org-cols: 3; }
+    .org-branches[data-cols='4'] { --org-cols: 4; }
+
+    /* The horizontal bus.
+       It has to start and stop exactly on the centre of the first and last
+       branch, because that is where their drop lines are. The obvious inset —
+       50% / column-count — is WRONG: it ignores the grid gaps, and at four
+       columns it left the bus ending 7.5px inboard of the outer drops, so the
+       chart rendered with two visibly disconnected branches.
+       The correct inset is half a column, and a column is the track width the
+       grid actually computes: (100% - (n - 1) gaps) / n. */
+    .org-branches::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      height: 1.5px;
+      background-color: var(--color-ink-950);
+      left: calc((100% - (var(--org-cols) - 1) * var(--org-gap)) / (2 * var(--org-cols)));
+      right: calc((100% - (var(--org-cols) - 1) * var(--org-gap)) / (2 * var(--org-cols)));
+    }
+
+    /* Every branch drops from the bus, including the first. */
+    .org-branch::before,
+    .org-branch:not(:first-child)::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      width: 1.5px;
+      height: 1.25rem;
+      background-color: var(--color-ink-950);
+    }
+
+    /* Hovering a branch lights its own drop line all the way to the bus, so the
+       chart answers the pointer instead of sitting there as a printed diagram.
+       Pure CSS — no listener, nothing to clean up, and it costs nothing on a
+       device that cannot hover. */
+    .org-branch::before {
+      transition: background-color 220ms var(--ease-out-quint);
+    }
+
+    .org-branch:hover::before {
+      background-color: var(--color-accent-600);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .org-branch {
+      transition: none;
+    }
+  }
+
+
+  /* ==========================================================================
+     The start window.
+
+     A ring of divisions around the mark. See StartWindow.astro for the shape of
+     it and start.ts for the choreography.
+
+     Guards that live here rather than in JavaScript, so they hold even if the
+     script never runs:
+       1. display:none unless <html> has .js - no JS, no window, ever.
+       2. prefers-reduced-motion removes it outright.
+     There is no CSS failsafe timer any more: unlike the old poster this window
+     waits for the visitor rather than lifting itself, so a timeout would fight
+     the whole point. What replaces it is that the window can always be closed -
+     Enter, Escape, or the backdrop - and start.ts restores the scroll lock on
+     every one of those paths.
+     ========================================================================== */
+  .start {
+    display: none;
+  }
+
+  html.start-ready .start {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    /* Title block, stage, figures. The header row is `auto` so it takes only
+       what it needs and never steals height from the ring. */
+    grid-template-rows: auto 1fr auto;
+    /* STRETCH, not center. With place-items:center the stage shrank to its own
+       content, so the ring measured a box a couple of hundred pixels wide and
+       fell back to the compact grid even on a roomy screen. The stage must fill
+       its row; it centres its own children. */
+    place-items: stretch;
+    background-color: var(--color-concrete);
+    overflow: hidden;
+    animation: start-in 220ms var(--ease-out-quint) both;
+  }
+
+  /* Fades in, because it is now revealed by the module rather than before
+     first paint, and an instant appearance a beat after the page would read as
+     a glitch. */
+  @keyframes start-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .start__grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgb(27 24 23 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(27 24 23 / 0.035) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Corner registration marks. On screen they frame the sheet; on paper they
+     are literally crop marks. Four spans, one per corner, each drawn as two
+     rules with a border. */
+  .start__crop {
+    position: absolute;
+    inset: 1rem;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .start__crop span {
+    position: absolute;
+    width: 1.15rem;
+    height: 1.15rem;
+    border: 0 solid var(--color-border);
+    opacity: 0.55;
+  }
+
+  .start__crop span:nth-child(1) {
+    top: 0;
+    left: 0;
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+
+  .start__crop span:nth-child(2) {
+    top: 0;
+    right: 0;
+    border-top-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+
+  .start__crop span:nth-child(3) {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+
+  .start__crop span:nth-child(4) {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+
+  /* --- the title block ---------------------------------------------------- */
+  .start__head {
+    position: relative;
+    z-index: 4;
+    justify-self: center;
+    width: fit-content;
+    max-width: calc(100% - 2rem);
+    margin-top: 1.1rem;
+    padding: 0.7rem 1.6rem 0.75rem;
+    text-align: center;
+    border: 1px solid var(--glass-edge);
+    border-radius: 999px;
+    background: var(--glass-text-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .start__head-name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(0.7rem, 1.5vw, 0.86rem);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-ink-950);
+  }
+
+  .start__head-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.4rem 0 0;
+    font-family: var(--font-mono);
+    font-size: clamp(0.55rem, 1.1vw, 0.66rem);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-stone-600);
+  }
+
+  .start__head-sep {
+    color: var(--color-accent-400);
+  }
+
+  /* --- the stage ---------------------------------------------------------- */
+  .start__stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    /* min-height:0 lets the 1fr row actually shrink on short screens instead of
+       overflowing the window. */
+    min-height: 0;
+    padding: 1.25rem;
+  }
+
+  .start__core {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    /* Sized by start.ts from whatever the ring leaves over, so the centre can
+       never grow into the tiles. Falls back to 22rem before script runs. */
+    max-width: var(--core-max, 22rem);
+    pointer-events: none;
+  }
+
+  /* Everything in the centre is a proportion of --core-max, which start.ts
+     sets from whatever the ring leaves over. Sizing these off the VIEWPORT was
+     the bug: adding the years line made the stack taller than the circle's
+     inner clearance, and the tagline underneath collided with the tiles. Tied
+     to the clearance instead, the centre shrinks with the ring and cannot
+     outgrow it. */
+  .start__mark {
+    width: clamp(2.25rem, calc(var(--core-max, 22rem) * 0.2), 5.5rem);
+    height: auto;
+    overflow: visible;
+  }
+
+  .start__mask {
+    overflow: hidden;
+    margin: calc(var(--core-max, 22rem) * 0.035) 0 0;
+  }
+
+  .start__name {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(0.95rem, calc(var(--core-max, 22rem) * 0.105), 2rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--color-ink-950);
+  }
+
+  /* The active division's NAME sits in the middle of the ring; its summary
+     lives below the whole stage. Splitting them is what keeps the centre small
+     enough never to collide with the ring on a narrow screen. */
+  .start__detail {
+    margin-top: calc(var(--core-max, 22rem) * 0.03);
+    min-height: calc(var(--core-max, 22rem) * 0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Low in the circle the available chord is far narrower than the widest
+       point, so this line gets less room than the name above it. */
+    max-width: 78%;
+    margin-inline: auto;
+  }
+
+  .start__detail-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+  }
+
+  .start__detail-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(0.75rem, calc(var(--core-max, 22rem) * 0.072), 1.3rem);
+    line-height: 1.15;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-accent-700);
+    text-wrap: balance;
+  }
+
+  /* Below the ring, in the actions area, so it can be a full sentence without
+     ever fighting the circle for room. */
+  .start__summary {
+    flex-basis: 100%;
+    margin: 0 auto;
+    max-width: 52ch;
+    font-size: clamp(0.9rem, 1.5vw, 1.02rem);
+    line-height: 1.55;
+    color: var(--color-stone-700);
+    text-align: center;
+    text-wrap: pretty;
+    min-height: 2.6rem;
+  }
+
+  /* --- the ring ----------------------------------------------------------- */
+  .start__orbit {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    place-items: center;
+    z-index: 3;
+  }
+
+  /* The dial the tiles sit on, drawn as real geometry.
+     Without it the tiles read as seven things scattered near a logo; with it
+     they read as points on an instrument. Sized from --ring-d, which start.ts
+     sets from the same radius it positions the tiles with, so the line cannot
+     drift away from them. Purely decorative and never interactive. */
+  .start__ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--ring-d, 0);
+    height: var(--ring-d, 0);
+    margin: calc(var(--ring-d, 0) / -2) 0 0 calc(var(--ring-d, 0) / -2);
+    z-index: 1;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  /* pathLength normalises the circumference to 100 regardless of radius, so
+     start.ts can draw the circle on with a dashoffset of 100 → 0 without ever
+     measuring it. The same normalisation is what lets the dash pattern below
+     stay even at any size. */
+  /* The tiles cover most of the circle, so only about 70px of arc shows
+     between neighbours. At 0.22 that read as nothing at all — the dial has to
+     carry in those short gaps or it may as well not be drawn. */
+  .start__ring-track {
+    stroke: rgb(99 72 41 / 0.32);
+    stroke-width: 1.2;
+    fill: none;
+    stroke-dasharray: 100;
+  }
+
+  .start__ring-ticks line {
+    stroke: rgb(99 72 41 / 0.55);
+    stroke-width: 1.5;
+  }
+
+  /* No circle to draw when the tiles are in a grid. */
+  .start--compact .start__ring,
+  .start--compact .start__glass {
+    display: none;
+  }
+
+  /* --- the world behind the window ----------------------------------------- */
+  /* Full-bleed and already moving. z-index -1 sits above the sheet's own white
+     and below everything else, so no other element needs a z-index. */
+  .start__world {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* --- glass ---------------------------------------------------------------- */
+  /* One recipe, so the lens, tiles and panels read as one material: a bright
+     top edge where light catches it, a violet depth at the bottom, a soft cast
+     shadow, and the city behind blurred rather than hidden. */
+  .start {
+    --glass-bg: linear-gradient(
+      155deg,
+      rgb(255 255 255 / 0.74),
+      rgb(255 255 255 / 0.46) 56%,
+      rgb(250 246 238 / 0.56)
+    );
+    --glass-edge: rgb(255 255 255 / 0.78);
+    /* Denser, for glass that carries text: measured against the darkest city
+       pixel behind every label, at the thinnest stop of the gradient. The lens
+       carries only the mark and keeps the thinner glass, so the city shows. */
+    --glass-text-bg: linear-gradient(
+      155deg,
+      rgb(255 255 255 / 0.9),
+      rgb(255 255 255 / 0.76) 56%,
+      rgb(250 246 238 / 0.82)
+    );
+    --glass-blur: blur(16px) saturate(1.55);
+    --glass-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.95),
+      inset 0 -14px 28px -22px rgb(99 72 41 / 0.3),
+      0 24px 54px -26px rgb(22 24 28 / 0.5),
+      0 2px 8px -2px rgb(22 24 28 / 0.12);
+  }
+
+  /* The lens the mark sits on. */
+  .start__glass {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    /* Centred by margins, not a transform: the intro scales the lens with GSAP,
+       which writes its own transform and would wipe a translate() here. */
+    --lens: calc(var(--core-max, 22rem) * 1.18);
+    width: var(--lens);
+    height: var(--lens);
+    margin: calc(var(--lens) / -2) 0 0 calc(var(--lens) / -2);
+    border-radius: 50%;
+    pointer-events: none;
+    background:
+      radial-gradient(110% 80% at 28% 16%, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0) 44%),
+      radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.28) 62%, rgb(243 234 218 / 0.36));
+    /* Clear glass, not frosted: the owner judged the frosted centre, the city
+       blurred to mush behind the mark, the poorest part of the window. The
+       city is dimmed under the lens in its own frame (terrain.ts, the soft
+       spot) and this veil does the rest, so the city stays sharp. */
+    border: 1px solid rgb(255 255 255 / 0.82);
+    box-shadow:
+      inset 0 0 0 7px rgb(255 255 255 / 0.14),
+      inset 0 -26px 50px -30px rgb(99 72 41 / 0.38),
+      0 34px 80px -30px rgb(22 24 28 / 0.55),
+      0 0 0 1px rgb(168 132 80 / 0.14);
+    overflow: hidden;
+  }
+
+  /* A survey circle etched inside the glass: the architectural touch. */
+  .start__glass::before {
+    content: '';
+    position: absolute;
+    inset: 7%;
+    border-radius: 50%;
+    border: 1px solid rgb(140 106 58 / 0.18);
+  }
+
+  /* The specular sweep that crosses the lens once the mark has formed.
+     start.ts drives --sweep from off one side to off the other. */
+  .start__glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(112deg, transparent 40%, rgb(255 255 255 / 0.8) 50%, transparent 60%);
+    background-size: 260% 100%;
+    background-position: var(--sweep, 140%) 0;
+  }
+
+  /* The travelling light on the dial. */
+  .start__ring-glow {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.95);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 7 93;
+    stroke-dashoffset: 0;
+    opacity: 0;
+    filter: drop-shadow(0 0 4px rgb(196 164 111 / 0.95)) drop-shadow(0 0 10px rgb(168 132 80 / 0.6));
+  }
+
+  .start__node {
+    position: absolute;
+    /* --a (angle) and --r (radius) are written per node by start.ts. The node
+       owns ONLY placement; the link inside owns appearance and animation. GSAP
+       writes an inline transform on whatever it animates, so anything animated
+       here would destroy this placement. */
+    transform: rotate(var(--a, 0deg)) translate(var(--r, 12rem)) rotate(calc(var(--a, 0deg) * -1));
+  }
+
+  /* A tile, not a pill.
+     The old node was a horizontal pill carrying a number and a full name, which
+     is why the ring could not survive a narrow window - seven long pills simply
+     will not fit round a small circle, and the layout fell back to a vertical
+     list. A compact stacked tile has a nearly square footprint, so the same
+     circle works from a phone up to a wide desktop and never has to become a
+     list. */
+  .start__node-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--tile, 5.5rem) * 0.07);
+    width: var(--tile, 5.5rem);
+    min-height: var(--tile, 5.5rem);
+    /* Everything inside a tile is a proportion of the tile, so making the ring
+       bigger makes the icons and names bigger with it rather than leaving a
+       large box around small content. */
+    padding: calc(var(--tile, 5.5rem) * 0.08) calc(var(--tile, 5.5rem) * 0.06);
+    text-align: center;
+    border: 1px solid var(--glass-edge);
+    border-radius: 1rem;
+    background: var(--glass-text-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
+    transition:
+      border-color 220ms var(--ease-out-quint),
+      background-color 220ms var(--ease-out-quint),
+      box-shadow 220ms var(--ease-out-quint);
+  }
+
+  /* Carried by shadow and border, never transform - GSAP leaves an inline
+     transform on this element and a stylesheet transform would lose to it. */
+  .start__node-link:hover,
+  .start__node-link:focus-visible {
+    border-color: var(--color-accent-300);
+    background: linear-gradient(155deg, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.74));
+    box-shadow:
+      var(--glass-shadow),
+      0 0 0 4px rgb(168 132 80 / 0.14);
+  }
+
+  .start__node-icon {
+    display: grid;
+    place-items: center;
+    width: clamp(1.75rem, calc(var(--tile, 5.5rem) * 0.32), 3.25rem);
+    height: clamp(1.75rem, calc(var(--tile, 5.5rem) * 0.32), 3.25rem);
+    flex-shrink: 0;
+    /* Was a solid amber square. A very light blue tint with an violet glyph
+       reads as a label rather than a hi-vis sticker. The chip itself is only
+       1.12:1 against white, so it carries a hairline — the tint alone would be
+       invisible. Icon on tint is 5.62:1, well past the 3:1 a graphic needs. */
+    background-color: var(--color-accent-50);
+    border: 1px solid var(--color-accent-100);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent-600);
+    transition:
+      background-color 220ms var(--ease-out-quint),
+      border-color 220ms var(--ease-out-quint);
+  }
+
+  .start__node-icon svg {
+    width: 55%;
+    height: 55%;
+  }
+
+  .start__node-link:hover .start__node-icon,
+  .start__node-link:focus-visible .start__node-icon {
+    background-color: var(--color-accent-100);
+    border-color: var(--color-accent-300);
+    color: var(--color-accent-700);
+  }
+
+  .start__node-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(0.64rem, calc(var(--tile, 5.5rem) * 0.115), 0.98rem);
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    color: var(--color-ink-950);
+    text-wrap: balance;
+  }
+
+  /* The index number rides the tile's corner rather than taking a line of its
+     own, which is what lets the tile stay square. */
+  .start__node-num {
+    position: absolute;
+    top: 0.35rem;
+    left: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: clamp(0.5rem, calc(var(--tile, 5.5rem) * 0.075), 0.68rem);
+    letter-spacing: 0.12em;
+    color: var(--color-accent-800);
+  }
+
+  .start__node-link {
+    position: relative;
+  }
+
+  /* Fallback for a box that genuinely cannot hold a circle - a very short
+     landscape phone, mostly. Two columns, never one: a single column was the
+     arrangement that read as an unstyled list. */
+  .start--compact .start__orbit {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: min(28rem, 100%);
+    margin-inline: auto;
+  }
+
+  .start--compact .start__node {
+    position: static;
+    transform: none;
+  }
+
+  .start--compact .start__node-link {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    width: 100%;
+    min-height: 0;
+    padding: 0.65rem 0.7rem;
+    text-align: left;
+  }
+
+  .start--compact .start__node-num {
+    position: static;
+  }
+
+  .start--compact .start__node-name {
+    font-size: 0.72rem;
+  }
+
+  /* --- footer actions ----------------------------------------------------- */
+  .start__actions {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem 2.5rem;
+    justify-self: center;
+    width: min(calc(100% - 2rem), 60rem);
+    margin-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--glass-edge);
+    border-radius: 1.4rem;
+    background: var(--glass-text-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .start__enter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 3.25rem;
+    padding: 0.8rem 2rem;
+    border: 1.5px solid var(--color-ink-950);
+    background-color: var(--color-accent-600);
+    color: #ffffff;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      box-shadow 200ms var(--ease-out-quint),
+      transform 200ms var(--ease-out-quint);
+  }
+
+  .start__enter:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 0 var(--color-ink-950);
+  }
+
+  .start__enter {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* The action panel is the one piece of glass the owner asked to see as glass:
+     thinner than the tiles, with a heavy blur. A heavy blur averages the city
+     behind it into a soft, light field, which is what keeps the text on it
+     legible — measured against the blurred backdrop, not a single pixel. */
+  .start__actions {
+    background: linear-gradient(
+      155deg,
+      rgb(255 255 255 / 0.66),
+      rgb(255 255 255 / 0.48) 55%,
+      rgb(250 246 238 / 0.56)
+    );
+    /* The shared recipe (was its own 26px chain): cheaper to recompute under a
+       moving city, one shader fewer to compile, and the glass a touch denser
+       so the text keeps its margin. */
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  /* That legibility is the blur's doing: over the UNblurred city this glass
+     measures 3.4:1. Where the blur is missing, or transparency is unwelcome,
+     the panel goes dense enough to stand on its own. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .start__actions {
+      background: rgb(255 255 255 / 0.88);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .start__actions {
+      background: #ffffff;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  /* Glass costs the GPU a re-blur of the moving city behind it on every frame,
+     ten regions at once in this window. The city's quality governor
+     (terrain.ts) publishes its tier on <html>; weaker devices keep the glass
+     look and lose the blur — the tiles' glass is dense enough to read without
+     it (worst case measured over the unblurred city: 5.8:1). Medium keeps the
+     two pieces of glass that carry the look: the lens and the action panel. */
+  html[data-quality='medium'] .start__node-link,
+  html[data-quality='medium'] .start__head,
+  html[data-quality='low'] .start__node-link,
+  html[data-quality='low'] .start__head,
+  html[data-quality='still'] .start__node-link,
+  html[data-quality='still'] .start__head {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  html[data-quality='low'] .start__glass,
+  html[data-quality='still'] .start__glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  html[data-quality='low'] .start__actions,
+  html[data-quality='still'] .start__actions {
+    background: rgb(255 255 255 / 0.88);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* The stage is promoted to its own layer, painted once and then scaled by
+     the compositor. Without the hint the browser re-rasterised the whole
+     dial at every step of the 7.5× exit zoom: 36 fps and frames of 100 ms on
+     an integrated GPU, against 57 fps and a 17 ms 95th percentile with it.
+     The zoom is a fast fade, so the texture's softness at scale never shows. */
+  .start__stage {
+    will-change: transform, opacity;
+  }
+
+  /* The exit zooms the stage 7.5×. A blurred lens and blurred tiles at that
+     scale are a full-screen blur recomputed every frame of the zoom — the
+     single most expensive thing the site could ask of a GPU, for a second in
+     which nobody can see frosting anyway. The glass stays; the blur goes. */
+  .start--leaving .start__glass,
+  .start--leaving .start__node-link,
+  .start--leaving .start__head,
+  .start--leaving .start__actions {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .start__enter-progress {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 3px;
+    background: rgb(255 255 255 / 0.85);
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  .start__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem 1rem;
+  }
+
+  /* Secondary to the point of being quiet: the flyer is a bonus, not the
+     reason anyone is here. */
+  .start__print {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 3.25rem;
+    padding: 0.8rem 1.25rem;
+    border: 1.5px solid transparent;
+    background: none;
+    color: var(--color-stone-700);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      color 200ms var(--ease-out-quint),
+      border-color 200ms var(--ease-out-quint);
+  }
+
+  .start__print:hover,
+  .start__print:focus-visible {
+    border-color: var(--color-ink-950);
+    color: var(--color-ink-950);
+    outline: none;
+  }
+
+  /* Nothing on the sheet may be clicked once the exit has started — a second
+     click mid-zoom would start a second navigation. */
+  .start--leaving {
+    pointer-events: none;
+  }
+
+  /* Paper only. */
+  .start__contact {
+    display: none;
+  }
+
+  .start__hint {
+    margin: 0;
+    display: flex;
+    gap: 1.75rem;
+  }
+
+  .start__hint-value {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.35rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink-950);
+  }
+
+  .start__hint-unit {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--color-stone-700);
+  }
+
+  .start__hint-label {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-stone-700);
+  }
+
+  /* There is deliberately no "stack it vertically" breakpoint any more. The
+     ring is sized from the box it is actually in (see start.ts), so it holds
+     its shape from a phone upward, and the only fallback is the two-column
+     .start--compact grid above. */
+
+  @media (prefers-reduced-motion: reduce) {
+    html.start-ready .start {
+      display: none;
+    }
+  }
+
+  /* Hard structural rules. A drawing sheet is ruled, not shadowed. */
+  .rule-hard {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .rule-hair {
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  /* Section index — the innovative navigation. A fixed vertical rail of the
+     page's sections; the active one is marked as you scroll and each is a jump
+     target. Desktop only: on a phone it would compete with the content. */
+  .section-index {
+    position: fixed;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    display: none;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  @media (min-width: 1280px) {
+    .section-index {
+      display: flex;
+    }
+  }
+
+  .section-index a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.625rem;
+    padding: 0.3rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgb(27 24 23 / 0.4);
+    transition: color 220ms var(--ease-out-quint);
+  }
+
+  /* The label is hidden until the section is active or hovered, so the rail
+     reads as a row of ticks at rest — quiet, until you need it. */
+  .section-index a span {
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    transition:
+      max-width 320ms var(--ease-out-quint),
+      opacity 220ms var(--ease-out-quint);
+  }
+
+  .section-index a::after {
+    content: '';
+    width: 1.5rem;
+    height: 2px;
+    background-color: currentColor;
+    transition: width 260ms var(--ease-out-quint);
+  }
+
+  .section-index a:hover,
+  .section-index a[aria-current='true'] {
+    color: var(--color-ink-950);
+  }
+
+  /* The active section's name shows only where the page margin can hold it.
+     Between 1280 and 1600px the margin is ~80px and the name landed on the
+     content — over the equipment register's quantities, for one. There the
+     rail is ticks, and a name appears on hover, on a backing, as a tooltip. */
+  .section-index a:hover span {
+    max-width: 10rem;
+    opacity: 1;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.3rem;
+    background-color: rgb(255 255 255 / 0.92);
+    box-shadow: 0 1px 6px rgb(22 24 28 / 0.12);
+  }
+
+  @media (min-width: 1600px) {
+    .section-index a[aria-current='true'] span {
+      max-width: 10rem;
+      opacity: 1;
+    }
+  }
+
+  .section-index a[aria-current='true']::after {
+    width: 2.75rem;
+    background-color: var(--color-accent-600);
+  }
+
+  /* Horizontal rail — the project explorer scrolls sideways, which is both
+     unusual for the sector and genuinely the right shape for browsing a set of
+     wide photographs. Keyboard and trackpad both work; the scrollbar is hidden
+     but the rail is focusable. */
+  .rail {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 0.5rem;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+
+  /* Continuous ticker for the client names. Duplicated track, so the loop is
+     seamless. Pauses on hover and under reduced motion. */
+  .ticker {
+    display: flex;
+    width: max-content;
+    animation: ticker 46s linear infinite;
+  }
+
+  .ticker:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes ticker {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker {
+      animation: none;
+    }
+  }
+
+  /* Oversized index numeral used as a layout element. */
+  .numeral {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+    font-variant-numeric: tabular-nums;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgb(27 24 23 / 0.28);
+  }
+}
+
+/* ============================================================================
+   Scroll reveal
+   Elements start hidden only when JS is available to reveal them — the
+   .js-reveal class is added to <html> by the reveal script. Without it
+   everything stays visible, so the site degrades cleanly with JS disabled.
+   ========================================================================== */
+/* GSAP animates these to their final values; CSS only sets the start state,
+   and only when JS is present to finish the job. The slight scale-down adds a
+   subtle "settling into place" to the rise. */
+.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px) scale(0.985);
+}
+
+.js-reveal [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Word-mask reveal for the hero headline. The spans are created by motion.ts,
+   so a visitor without JS simply sees the finished headline. */
+.split-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.split-word {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Scroll-progress bar — a hairline of the brand ramp, filled by motion.ts. */
+.scroll-progress {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 60;
+  height: 3px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background-image: var(--gradient-brand);
+  pointer-events: none;
+}
+
+/* Ambient float for small accent marks — a slow, continuous drift so the page
+   is never entirely static. */
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-soft {
+  animation: float-soft 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal [data-reveal],
+  .js-reveal [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Card tilt is live (interactions.ts initTilt): transform is GSAP's now. */
+.tilt-live {
+  transition-property: box-shadow, border-color, background-color, color, opacity, translate;
+}
+
+/* ============================================================================
+   3D SCENE AND BACKGROUND DEPTH
+
+   The owner asked for 3D design and for the background to carry more design,
+   and — after several passes that read as too subtle to them — to make it
+   visible. Four instruments, all decorative, all aria-hidden and
+   pointer-events:none, none of them moving a single piece of content:
+
+     .terrain   a <canvas> drawn by src/scripts/terrain.ts: a wireframe terrain
+                the highway runs through, rising into wireframe towers. Three
+                modes: hero (light, weighted right), band (dark, centred),
+                start (faint, behind the welcome dial).
+     .beam      one slow diagonal light ray sweeping a section.
+     .orbits    thin rings drifting in the margins, echoing the welcome dial;
+                one with a conic "glass" stroke, one with the dial's seven ticks.
+     aurora     the fixed blooms on .grain::after, now stronger and drifting.
+
+   The canvas fades into its ground with a MASK, never a hard rectangle. The
+   ramps are multi-stop and eased, which is what the premium reference sites
+   (Linear, ElevenLabs) actually ship — a two-stop fade leaves a visible grey
+   band. In the hero the mask takes the scene to zero under the copy column so
+   obsidian type never has a line behind it. Everything CSS here is frozen by
+   the universal reduced-motion rule; the canvas gates its own loop in JS.
+   ========================================================================== */
+.terrain {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* The horizon glow behind the city, placed by terrain.ts (setHaze). Drawn
+     here once rather than into every frame of the canvas. */
+  background-image: radial-gradient(
+    circle var(--haze-r, 0px) at var(--haze-x, 50%) var(--haze-y, 30%),
+    var(--haze-c, transparent),
+    transparent
+  );
+  /* The city is drawn solid; how faint it sits is set here (terrain.ts). */
+  opacity: var(--city-alpha, 1);
+}
+
+/* Hero mask, set from MEASURED glyph extents at 1280px, not from box sizes:
+   every small grey line (eyebrow, lead, buttons, client list) ends by 47% of
+   the hero's width, so the scene is zero until 44% and eases to full by 68%.
+   Only the large obsidian headline reaches further (to 73%, at 29-42% height),
+   and it clears 12:1 where a line crosses it. The top fade is short so the
+   towers rising in the upper-right keep their silhouettes. */
+.terrain--hero {
+  -webkit-mask-image: var(--world-clear, linear-gradient(#000, #000)),
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0) 0%,
+      rgb(0 0 0 / 0) 44%,
+      rgb(0 0 0 / 0.05) 47%,
+      rgb(0 0 0 / 0.14) 50%,
+      rgb(0 0 0 / 0.28) 53%,
+      rgb(0 0 0 / 0.45) 56%,
+      rgb(0 0 0 / 0.63) 59%,
+      rgb(0 0 0 / 0.8) 62%,
+      rgb(0 0 0 / 0.93) 65%,
+      #000 68%
+    ),
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 8%, #000 84%, rgb(0 0 0 / 0) 100%);
+  mask-image: var(--world-clear, linear-gradient(#000, #000)),
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0) 0%,
+      rgb(0 0 0 / 0) 44%,
+      rgb(0 0 0 / 0.05) 47%,
+      rgb(0 0 0 / 0.14) 50%,
+      rgb(0 0 0 / 0.28) 53%,
+      rgb(0 0 0 / 0.45) 56%,
+      rgb(0 0 0 / 0.63) 59%,
+      rgb(0 0 0 / 0.8) 62%,
+      rgb(0 0 0 / 0.93) 65%,
+      #000 68%
+    ),
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 8%, #000 84%, rgb(0 0 0 / 0) 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* The first mask layer of these three is --world-clear: the clearing under
+   their section's words, painted by terrain.ts once per measure, instead of
+   being cut out of every frame of the canvas (14 ms a frame on the hero at
+   full resolution). Hidden until it is there. */
+.terrain--hero,
+.terrain--band,
+.terrain--page {
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  transition: opacity 500ms ease-out;
+}
+
+.terrain--hero:not([data-clear]),
+.terrain--band:not([data-clear]),
+.terrain--page:not([data-clear]) {
+  opacity: 0;
+}
+
+/* Below the desktop layout the copy spans the full width, so a left/right mask
+   would leave lines behind the text. The scene retreats to the upper-right
+   corner instead — the towers' corner — and terrain.ts also halves its
+   alpha on narrow screens. */
+@media (max-width: 1023px) {
+  .terrain--hero {
+    -webkit-mask-image: var(--world-clear, linear-gradient(#000, #000)), radial-gradient(ellipse 96% 52% at 100% 2%, #000 30%, rgb(0 0 0 / 0) 92%);
+    mask-image: var(--world-clear, linear-gradient(#000, #000)), radial-gradient(ellipse 96% 52% at 100% 2%, #000 30%, rgb(0 0 0 / 0) 92%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+/* Band mask. The section's scrim thins from 90% at the left edge to 55% at
+   the middle, and at 45% of the width — where the white/70 lead paragraph
+   ends — grid lines were showing through at 3.24:1, below AA. So the band
+   now masks horizontally like the hero: zero until 36%, eased to full by 64%.
+   The large white headline reaches 69% and stays above its 3:1 bar; the
+   scene keeps its full strength in the right third, where the towers are. */
+.terrain--band {
+  -webkit-mask-image: var(--world-clear, linear-gradient(#000, #000)),
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0) 0%,
+      rgb(0 0 0 / 0) 36%,
+      rgb(0 0 0 / 0.06) 40%,
+      rgb(0 0 0 / 0.18) 44%,
+      rgb(0 0 0 / 0.34) 48%,
+      rgb(0 0 0 / 0.52) 52%,
+      rgb(0 0 0 / 0.7) 56%,
+      rgb(0 0 0 / 0.86) 60%,
+      #000 64%
+    ),
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 12%, #000 88%, rgb(0 0 0 / 0) 100%);
+  mask-image: var(--world-clear, linear-gradient(#000, #000)),
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0) 0%,
+      rgb(0 0 0 / 0) 36%,
+      rgb(0 0 0 / 0.06) 40%,
+      rgb(0 0 0 / 0.18) 44%,
+      rgb(0 0 0 / 0.34) 48%,
+      rgb(0 0 0 / 0.52) 52%,
+      rgb(0 0 0 / 0.7) 56%,
+      rgb(0 0 0 / 0.86) 60%,
+      #000 64%
+    ),
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 12%, #000 88%, rgb(0 0 0 / 0) 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Phones: the band's type spans the full width and starts at the top, so the
+   scene retreats to the bottom-right corner, where only the near ground and
+   the road's approach sit. terrain.ts also draws lighter below 1024px. */
+@media (max-width: 1023px) {
+  .terrain--band {
+    -webkit-mask-image: var(--world-clear, linear-gradient(#000, #000)), radial-gradient(ellipse 92% 56% at 100% 100%, #000 28%, rgb(0 0 0 / 0) 92%);
+    mask-image: var(--world-clear, linear-gradient(#000, #000)), radial-gradient(ellipse 92% 56% at 100% 100%, #000 28%, rgb(0 0 0 / 0) 92%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+/* --- moving between pages -------------------------------------------------- */
+/* Cross-document View Transitions: the outgoing frame — the city mid-surge —
+   pushes on past the viewer and dissolves as the new page settles in behind
+   it. Supported in current Chromium and Safari; elsewhere navigation is simply
+   instant. Reduced motion turns it off entirely. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: world-leave 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: world-arrive 560ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@keyframes world-leave {
+  to {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes world-arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* --- world strips: side-on interludes between home sections -------------- */
+/* Short enough never to feel like a section of its own, tall enough for a
+   tower to stand in. The canvas fades out at all four edges, so the strip
+   dissolves into the grounds above and below it rather than sitting on them
+   as a band. */
+.world-strip {
+  position: relative;
+  height: clamp(150px, 19vw, 270px);
+  overflow: hidden;
+  background-image: linear-gradient(to bottom, var(--color-concrete), var(--color-mist-50));
+}
+
+.terrain--strip {
+  -webkit-mask-image:
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 22%, #000 80%, rgb(0 0 0 / 0) 100%),
+    linear-gradient(to right, rgb(0 0 0 / 0) 0%, #000 8%, #000 92%, rgb(0 0 0 / 0) 100%);
+  mask-image:
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 22%, #000 80%, rgb(0 0 0 / 0) 100%),
+    linear-gradient(to right, rgb(0 0 0 / 0) 0%, #000 8%, #000 92%, rgb(0 0 0 / 0) 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+@media print {
+  .world-strip {
+    display: none !important;
+  }
+}
+
+/* --- the city behind every section ---------------------------------------- */
+/* terrain.ts adds .world-host and a .world-backdrop to each section at run
+   time. Isolated so the backdrop's z-index -1 stays above the section's own
+   ground and below its content. Soft at top and bottom so neighbouring
+   sections flow into one another rather than sitting in boxes. */
+.world-host {
+  position: relative;
+  isolation: isolate;
+}
+
+.world-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* clip, not hidden: hidden would make this a scroll container, and the
+     pinned canvas inside would stick to it instead of to the viewport. */
+  overflow: clip;
+  pointer-events: none;
+  /* Two masks, intersected. The fade lives on the section's edges, not the
+     canvas's: a pinned canvas's edges are the screen's, mid-section, where
+     nothing should fade. And --world-clear is the clearing under every word
+     and card, painted by terrain.ts at run time: a mask on THIS box scrolls
+     with the words in the same frame, where one drawn into the pinned canvas
+     trailed them and flashed. Until it is ready, nothing shows. */
+  --world-clear: linear-gradient(transparent, transparent);
+  --world-fade: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0) 0,
+    #000 clamp(56px, 14%, 180px),
+    #000 calc(100% - clamp(56px, 14%, 180px)),
+    rgb(0 0 0 / 0) 100%
+  );
+  -webkit-mask-image: var(--world-clear), var(--world-fade);
+  mask-image: var(--world-clear), var(--world-fade);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  opacity: 0;
+  transition: opacity 500ms ease-out;
+}
+
+.world-backdrop[data-clear] {
+  opacity: 1;
+}
+
+/* Pinned (terrain.ts adds the class to animated backdrops only): the canvas is
+   one screen tall and holds the screen while its section scrolls past, so a
+   long section shows a whole city in proportion rather than a stretched strip. */
+.terrain--backdrop.is-pinned {
+  position: sticky;
+  inset: auto;
+  top: 0;
+  height: 100vh;
+  max-height: 100%;
+}
+
+/* A section that clips its overflow must clip without becoming a scroll
+   container, for the same reason. */
+.world-host.overflow-hidden {
+  overflow: clip;
+}
+
+@media print {
+  .world-backdrop {
+    display: none !important;
+  }
+}
+
+/* --- the welcome window's world ----------------------------------------- */
+/* Full strength everywhere except under the lens, where it steps back just
+   enough for the mark to lead — done inside the frame (terrain.ts, the soft
+   spot), NOT as a mask here: glass blurring a masked, constantly redrawn
+   layer froze a first-time browser for 600 ms as the window opened. It fades
+   in as its first frame is ready, so the window never shows an empty sheet. */
+.terrain--opening {
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out-quint);
+}
+
+html[data-world='ready'] .terrain--opening {
+  opacity: 1;
+}
+
+/* --- subpage headers ------------------------------------------------------ */
+/* Same shape of mask as the hero, one step more permissive: these headings are
+   shorter than "HIGHWAY TO HIGHRISE." so the copy runs out sooner. */
+.terrain--page {
+  -webkit-mask-image: var(--world-clear, linear-gradient(#000, #000)),
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0) 0%,
+      rgb(0 0 0 / 0) 46%,
+      rgb(0 0 0 / 0.08) 50%,
+      rgb(0 0 0 / 0.22) 54%,
+      rgb(0 0 0 / 0.42) 58%,
+      rgb(0 0 0 / 0.64) 62%,
+      rgb(0 0 0 / 0.85) 66%,
+      #000 72%
+    ),
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 10%, #000 86%, rgb(0 0 0 / 0) 100%);
+  mask-image: var(--world-clear, linear-gradient(#000, #000)),
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0) 0%,
+      rgb(0 0 0 / 0) 46%,
+      rgb(0 0 0 / 0.08) 50%,
+      rgb(0 0 0 / 0.22) 54%,
+      rgb(0 0 0 / 0.42) 58%,
+      rgb(0 0 0 / 0.64) 62%,
+      rgb(0 0 0 / 0.85) 66%,
+      #000 72%
+    ),
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, #000 10%, #000 86%, rgb(0 0 0 / 0) 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Below the desktop layout the heading spans the full width, so the scene
+   retreats to the upper-right corner as it does on the home hero. */
+@media (max-width: 1023px) {
+  .terrain--page {
+    -webkit-mask-image: var(--world-clear, linear-gradient(#000, #000)), radial-gradient(ellipse 92% 54% at 100% 4%, #000 26%, rgb(0 0 0 / 0) 92%);
+    mask-image: var(--world-clear, linear-gradient(#000, #000)), radial-gradient(ellipse 92% 54% at 100% 4%, #000 26%, rgb(0 0 0 / 0) 92%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+.orbits--page .orbit:nth-child(1) {
+  width: 22rem;
+  height: 22rem;
+  right: -7rem;
+  top: -6rem;
+}
+
+.orbits--page .orbit:nth-child(2) {
+  width: 13rem;
+  height: 13rem;
+  right: 19%;
+  bottom: -4rem;
+  animation-delay: -16s;
+}
+
+
+/* --- light beams ---------------------------------------------------------- */
+.beam {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background-image: linear-gradient(112deg, transparent 42%, var(--beam) 50%, transparent 58%);
+  will-change: transform;
+  animation: beam-sweep 32s ease-in-out infinite alternate;
+}
+
+.beam--light {
+  --beam: rgb(168 132 80 / 0.06);
+}
+
+/* On the dark plate the ray is white light, screened, and masked to the right
+   55% so the text zone's luminance never moves. */
+.beam--dark {
+  --beam: rgb(255 255 255 / 0.08);
+  mix-blend-mode: screen;
+  -webkit-mask-image: linear-gradient(to right, rgb(0 0 0 / 0) 45%, #000 62%);
+  mask-image: linear-gradient(to right, rgb(0 0 0 / 0) 45%, #000 62%);
+}
+
+@keyframes beam-sweep {
+  from {
+    transform: translateX(-28%);
+  }
+  to {
+    transform: translateX(28%);
+  }
+}
+
+/* --- drifting rings ------------------------------------------------------- */
+.orbits {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgb(168 132 80 / 0.22);
+  will-change: transform;
+  animation: orbit-drift 38s ease-in-out infinite alternate;
+}
+
+/* A stroke that is a violet-to-fuchsia-to-clear gradient: a ring of glass
+   catching light on one side. The mask cuts the filled disc to a 1.5px band. */
+.orbit--glass {
+  border: 0;
+  background: conic-gradient(
+    from 210deg,
+    rgb(168 132 80 / 0.55),
+    rgb(196 164 111 / 0.35) 40%,
+    transparent 70%,
+    rgb(168 132 80 / 0.55)
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+}
+
+/* The welcome dial's seven tick marks, carried into the page. */
+.orbit--dial::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from -90deg,
+    rgb(168 132 80 / 0.45) 0 0.6deg,
+    transparent 0.6deg calc(360deg / 7)
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 10px),
+    #000 calc(100% - 10px),
+    #000 calc(100% - 2px),
+    transparent calc(100% - 2px)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 10px),
+    #000 calc(100% - 10px),
+    #000 calc(100% - 2px),
+    transparent calc(100% - 2px)
+  );
+}
+
+.orbits--hero .orbit:nth-child(1) {
+  width: 26rem;
+  height: 26rem;
+  right: -9rem;
+  top: 8%;
+}
+
+.orbits--hero .orbit:nth-child(2) {
+  width: 14rem;
+  height: 14rem;
+  right: 22%;
+  top: -5rem;
+  animation-delay: -12s;
+}
+
+.orbits--hero .orbit:nth-child(3) {
+  width: 18rem;
+  height: 18rem;
+  left: -7rem;
+  bottom: 16%;
+  animation-delay: -24s;
+}
+
+.orbits--band .orbit {
+  width: 22rem;
+  height: 22rem;
+  right: -6rem;
+  top: -8rem;
+}
+
+.orbits--band .orbit--glass {
+  background: conic-gradient(
+    from 200deg,
+    rgb(255 255 255 / 0.35),
+    rgb(196 164 111 / 0.35) 40%,
+    transparent 70%,
+    rgb(255 255 255 / 0.35)
+  );
+}
+
+.orbits--contact {
+  z-index: -1;
+}
+
+.orbits--contact .orbit:nth-child(1) {
+  width: 20rem;
+  height: 20rem;
+  left: -8rem;
+  top: 10%;
+}
+
+.orbits--contact .orbit:nth-child(2) {
+  width: 12rem;
+  height: 12rem;
+  right: -4rem;
+  bottom: 8%;
+  animation-delay: -18s;
+}
+
+@keyframes orbit-drift {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate(2rem, -1.5rem) rotate(18deg);
+  }
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(2.5%, -2%) scale(1.04);
+  }
+}
+
+/* ============================================================================
+   The start window, on paper.
+
+   The owner asked for a flyer as well as a welcome screen, and this is the half
+   that makes that true: with the window open, File -> Print (or the "Print as
+   flyer" button) produces a single A4 sheet — title block, the seven divisions
+   on the dial, the three figures, and the contact line.
+
+   Deliberately NOT inside @layer components: `@page` is ignored inside a
+   cascade layer, and these rules have to beat every utility class on the page
+   without an !important war.
+
+   Two things this depends on:
+     1. `.start` is a direct child of <body>, so hiding its siblings hides the
+        whole website and leaves the sheet.
+     2. start.ts re-lays the ring at a fixed radius on `beforeprint` and puts it
+        back on `afterprint`. The screen radius is measured from the browser
+        window and means nothing on paper.
+   When the window is closed there is no `.start-ready`, none of this applies,
+   and printing gives you the page you are looking at.
+   ========================================================================== */
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  html.start-ready,
+  html.start-ready body {
+    height: auto;
+    overflow: visible !important;
+    background: #ffffff;
+  }
+
+  /* The site itself, out of the way. */
+  html.start-ready body > *:not(.start) {
+    display: none !important;
+  }
+
+  html.start-ready .start {
+    /* relative, NOT static: .start__crop is absolutely positioned against this
+       element, and taking it out of the positioning context would anchor the
+       crop marks to the page box instead of the sheet. */
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    min-height: 250mm;
+    background-color: #ffffff;
+    animation: none;
+  }
+
+  /* Grounds and brand colours are the flyer; without this most browsers drop
+     every fill and print an outline. */
+  html.start-ready .start,
+  html.start-ready .start * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* The blueprint grid is screen texture. On paper it is toner. */
+  .start__grid {
+    display: none;
+  }
+
+  /* Likewise every decorative layer added for the screen. */
+  .terrain,
+  .beam,
+  .orbits {
+    display: none !important;
+  }
+
+  /* Controls do not belong on a printed sheet. */
+  .start__buttons,
+  .start__summary {
+    display: none !important;
+  }
+
+  /* Anything mid-animation must print at its final value, not its start one —
+     GSAP's inline opacity:0 would otherwise print a blank sheet. */
+  .start__head,
+  .start__core,
+  .start__detail,
+  .start__node-link,
+  .start__ring,
+  .start__ring-ticks line {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* The node keeps its radial placement — that transform is the layout, not an
+     animation, so it is exempt from the reset above. */
+  .start__node {
+    transform: rotate(var(--a, 0deg)) translate(var(--r, 12rem)) rotate(calc(var(--a, 0deg) * -1)) !important;
+  }
+
+  .start__stage {
+    /* The ring needs room to be a ring; on paper there is no viewport to
+       measure, so the height is stated. */
+    min-height: 150mm;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .start__node-link {
+    border-color: rgb(27 24 23 / 0.45);
+    background-color: #ffffff;
+    box-shadow: none;
+  }
+
+  .start__hint {
+    justify-content: center;
+    gap: 12mm;
+    padding-top: 4mm;
+    border-top: 1.5px solid var(--color-ink-950);
+  }
+
+  /* The line that turns a poster into a flyer. */
+  .start__contact {
+    display: block;
+    flex-basis: 100%;
+    margin-top: 5mm;
+    padding-top: 3mm;
+    border-top: 1px solid rgb(27 24 23 / 0.3);
+    font-family: var(--font-mono);
+    font-size: 8pt;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--color-ink-950);
+  }
+
+  .start__contact p {
+    margin: 0;
+  }
+
+  /* One sheet, and no orphaned figures on a second page. */
+  .start__actions {
+    break-inside: avoid;
+  }
+}
+

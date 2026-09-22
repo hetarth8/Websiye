@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout
+  title="Page not found"
+  description="The page you were looking for does not exist."
+  noindex
+>
+  <section class="flex min-h-[70svh] items-center bg-concrete pt-24">
+    <div class="container-x py-20 text-center">
+      <p class="font-display text-7xl font-bold text-ink-950 sm:text-8xl">404</p>
+
+      <h1 class="mt-4 text-4xl text-ink-950 sm:text-5xl">This page is not here</h1>
+
+      <p class="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-stone-600">
+        The link may be out of date, or the page may have moved. Try our projects or head back to
+        the home page.
+      </p>
+
+      <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <a href="/" class="btn btn-primary">
+          Back to Home
+          <Icon name="arrowRight" class="h-5 w-5" />
+        </a>
+        <a href="/projects" class="btn btn-outline-dark">View Projects</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

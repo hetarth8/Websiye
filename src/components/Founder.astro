@@ -1,0 +1,122 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+import site from '../data/site.json';
+
+/**
+ * The founder, given his own section immediately before the organisation tree.
+ *
+ * The order is the argument: a buyer meets the man who owns the work, and only
+ * then sees the structure underneath him. That is the right way round for a
+ * contractor — the firm is answerable to a named person, not to a chart.
+ *
+ * Every word here is the owner's own, taken from site.json (originStory, vision,
+ * mission) or from the copy already approved for the team section. Nothing about
+ * his career, his background or his qualifications has been invented; where the
+ * site does not know something, it does not say it.
+ *
+ * The chairman used to also head the Team section. He has been removed from
+ * there, because saying the same thing twice on one page reads as padding.
+ */
+const team = (await getCollection('team')).sort((a, b) => a.data.order - b.data.order);
+const founder = team.find((m) => m.data.division === 'leadership') ?? team[0];
+
+const years = new Date().getFullYear() - site.founded;
+---
+
+<section id="founder" class="section scroll-mt-24 border-t-2 border-hairline bg-sand">
+  <div class="container-x">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
+      <!-- The portrait. -->
+      <figure class="m-0" data-reveal>
+        <div class="img-frame aspect-[4/5] border border-hairline">
+          {
+            founder?.data.photo ? (
+              <Image
+                src={founder.data.photo}
+                alt={`${founder.data.name}, ${founder.data.role} of ${site.legalName}`}
+                widths={[380, 620]}
+                sizes="(min-width: 1024px) 32vw, 90vw"
+                quality={88}
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              /* No portrait supplied: say so plainly rather than showing an
+                 empty frame or somebody else's photograph. */
+              <div class="grid h-full place-items-center bg-mist-100 p-6 text-center">
+                <p class="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-stone-700">
+                  Photograph to follow
+                </p>
+              </div>
+            )
+          }
+        </div>
+
+        <figcaption class="mt-4 flex items-baseline justify-between gap-4 border-t border-hairline pt-3">
+          <span class="font-display text-sm font-bold uppercase tracking-wide text-ink-950">
+            {founder?.data.name}
+          </span>
+          <span class="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-accent-700">
+            Est. {site.founded}
+          </span>
+        </figcaption>
+      </figure>
+
+      <!-- What he built. -->
+      <div>
+        <div class="title-block" data-reveal>
+          <div class="title-block__bar">
+            <span>The founder</span>
+            <span class="title-block__meta">Est. {site.founded}</span>
+          </div>
+          <h2 class="title-block__title mt-6">
+            {founder?.data.name}
+          </h2>
+        </div>
+
+        <p class="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.2em] text-accent-700">
+          {founder?.data.role}
+        </p>
+
+        <div class="mt-7 space-y-5" data-reveal>
+          <p class="max-w-2xl text-lg leading-relaxed text-stone-700">
+            {site.originStory}
+          </p>
+
+          <p class="max-w-2xl text-base leading-relaxed text-stone-700">
+            {/* Keep the expression off the start of a line: Astro follows JSX
+                whitespace rules and drops the newline between a sentence and a
+                following {expression}, which rendered "Daman.25 years on". */}
+            He started the firm in {site.founded} with a single road-building crew in Daman. {years}{' '}
+            years on, that crew has become a company running its own quarries, ready-mix
+            and asphalt plants — and still building everything from factories to family homes
+            across South Gujarat, Daman and Silvassa.
+          </p>
+        </div>
+
+        <!-- His own words for how the company is meant to run. -->
+        <blockquote class="mt-9 border-l-[3px] border-accent-500 pl-6" data-reveal>
+          <p class="font-display text-xl leading-snug text-ink-950 md:text-2xl">
+            {site.mission}
+          </p>
+          <footer class="mt-3 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-stone-700">
+            The company's mission, in his words
+          </footer>
+        </blockquote>
+
+        <div class="mt-9 flex flex-wrap items-center gap-4">
+          <a href="/#contact" class="btn btn-primary magnetic">
+            Speak to us
+            <Icon name="arrowRight" class="h-5 w-5" />
+          </a>
+          <a href="/#org" class="link-arrow text-sm">
+            The team he built
+            <Icon name="arrowRight" class="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

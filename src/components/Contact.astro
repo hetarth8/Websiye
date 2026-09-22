@@ -1,0 +1,282 @@
+---
+import site from '../data/site.json';
+import Icon from './Icon.astro';
+import SectionHeading from './SectionHeading.astro';
+
+const whatsappHref = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(site.whatsappMessage)}`;
+const directionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.mapQuery)}`;
+
+const projectTypes = [
+  'Asphalt road work',
+  'Civil / RCC works',
+  'Industrial infrastructure',
+  'Site development',
+  'Other / not sure yet',
+];
+
+const fieldClass =
+  'w-full rounded-xl border border-line-control bg-white px-4 py-3 text-ink-950 placeholder:text-stone-600/55 transition-colors focus:border-accent-600 user-invalid:border-red-600';
+
+const labelClass = 'block font-display text-sm font-semibold text-ink-950';
+const cardClass =
+  'flex items-start gap-4 rounded-2xl border border-hairline bg-white p-5 transition-colors hover:border-accent-400';
+const cardLabelClass =
+  'block font-display text-xs font-semibold uppercase tracking-[0.18em] text-stone-600';
+---
+
+<!-- Was a full section on an amber-50 tint. That was a fourth warm ground
+     doing nothing the heading and the form were not already doing, and it
+     added to the "everything is orange" read. Concrete, like the rest. -->
+<section id="contact" class="section relative isolate scroll-mt-24 overflow-hidden bg-concrete">
+  <div class="orbits orbits--contact" aria-hidden="true">
+    <span class="orbit orbit--glass"></span>
+    <span class="orbit"></span>
+  </div>
+  <div class="container-x">
+    <div class="grid gap-14 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
+      <!-- Details -->
+      <div>
+        <SectionHeading
+          eyebrow="Contact"
+          title="Send us your scope"
+          lead="Share drawings, a tender document or just a description of the work. We reply with a stage-wise estimate."
+        />
+
+        <div class="mt-10 space-y-4" data-reveal-group>
+          <a href={site.phoneHref} class={cardClass} data-reveal>
+            <Icon name="phone" class="mt-1 h-6 w-6 shrink-0 text-accent-600" />
+            <span>
+              <span class={cardLabelClass}>Call</span>
+              <span class="mt-1 block font-display text-xl font-semibold text-ink-950">
+                {site.phone}
+              </span>
+            </span>
+          </a>
+
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={cardClass}
+            data-reveal
+          >
+            <Icon name="whatsapp" class="mt-1 h-6 w-6 shrink-0 text-accent-600" />
+            <span>
+              <span class={cardLabelClass}>WhatsApp</span>
+              <span class="mt-1 block font-display text-xl font-semibold text-ink-950">
+                Message us directly
+              </span>
+            </span>
+          </a>
+
+          <a href={`mailto:${site.email}`} class={cardClass} data-reveal>
+            <Icon name="mail" class="mt-1 h-6 w-6 shrink-0 text-accent-600" />
+            <span class="min-w-0">
+              <span class={cardLabelClass}>Email</span>
+              <span class="mt-1 block break-all font-display text-lg font-semibold text-ink-950">
+                {site.email}
+              </span>
+            </span>
+          </a>
+
+          <div class="rounded-2xl border border-hairline bg-white p-5" data-reveal>
+            <div class="flex items-start gap-4">
+              <Icon name="pin" class="mt-1 h-6 w-6 shrink-0 text-accent-600" />
+              <address class="not-italic">
+                <span class={cardLabelClass}>Office</span>
+                <span class="mt-1 block text-sm leading-relaxed text-stone-700">
+                  {site.address.line1}<br />
+                  {site.address.line2}<br />
+                  {site.address.city} – {site.address.postalCode}, {site.address.state}
+                </span>
+              </address>
+            </div>
+            <!-- Linked rather than embedded: an iframe map would pull in
+                 third-party cookies and force a looser CSP. -->
+            <a
+              href={directionsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link-arrow mt-4 pl-10 text-sm"
+            >
+              Get Directions
+              <Icon name="arrowRight" class="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enquiry form -->
+      <div class="rounded-2xl border border-hairline bg-white p-7 shadow-sm md:p-9" data-reveal>
+        <h3 class="text-2xl text-ink-950">Project enquiry</h3>
+        <p class="mt-2 text-sm text-stone-600">
+          {/* Maroon, not amber: the asterisk carries meaning, so it has to
+              clear 4.5:1 on a light ground. */}
+          Fields marked <span class="font-semibold text-crimson-600">*</span> are required.
+        </p>
+
+        <form
+          name="enquiry"
+          data-enquiry
+          method="POST"
+          action="/api/enquiry"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          class="mt-7 space-y-5"
+        >
+          <!-- Netlify needs the form name echoed in the body of the POST. -->
+          <input type="hidden" name="form-name" value="enquiry" />
+
+          <!-- Honeypot: hidden from people, tempting to bots. -->
+          <p class="hidden">
+            <label>
+              Do not fill this in if you are human:
+              <input name="bot-field" tabindex="-1" autocomplete="off" />
+            </label>
+          </p>
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="name" class={labelClass}>
+                Your name <span class="text-crimson-600">*</span>
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                autocomplete="name"
+                aria-describedby="name-error"
+                class={`mt-2 ${fieldClass}`}
+              />
+              <p id="name-error" class="field-error" hidden>Please enter your name.</p>
+            </div>
+
+            <div>
+              <label for="phone" class={labelClass}>
+                Phone <span class="text-crimson-600">*</span>
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                required
+                autocomplete="tel"
+                inputmode="tel"
+                placeholder="+91"
+                pattern="[+0-9 ()\-]{7,}"
+                aria-describedby="phone-error"
+                class={`mt-2 ${fieldClass}`}
+              />
+              <p id="phone-error" class="field-error" hidden>Please enter a phone number we can call or WhatsApp.</p>
+            </div>
+          </div>
+
+          <div>
+            <label for="email" class={labelClass}>Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              aria-describedby="email-hint email-error"
+              class={`mt-2 ${fieldClass}`}
+            />
+            <p id="email-hint" class="mt-2 text-xs text-stone-600">
+              Optional — we will reply on WhatsApp if you prefer.
+            </p>
+            <p id="email-error" class="field-error" hidden>That email address does not look complete.</p>
+          </div>
+
+          <div>
+            <label for="projectType" class={labelClass}>Type of work</label>
+            <select id="projectType" name="projectType" class={`mt-2 ${fieldClass}`}>
+              {projectTypes.map((type) => <option value={type}>{type}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label for="message" class={labelClass}>
+              Scope of work <span class="text-crimson-600">*</span>
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              required
+              aria-describedby="message-error"
+              class={`mt-2 ${fieldClass}`}
+              placeholder="Location, approximate area or length, and when you need it started."
+            ></textarea>
+            <p id="message-error" class="field-error" hidden>Please tell us a little about the work.</p>
+          </div>
+
+          <button type="submit" class="btn btn-primary magnetic w-full">
+            Send Enquiry
+            <Icon name="arrowRight" class="h-5 w-5" />
+          </button>
+
+          <p class="text-xs leading-relaxed text-stone-600">
+            Your details are used only to respond to this enquiry. We do not share them with anyone
+            else.
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  /*
+   * Errors are said in words, not only shown in red (WCAG 1.4.1 and 3.3.1):
+   * each required field carries a message, tied to it by aria-describedby,
+   * and marked aria-invalid while it is wrong. The browser's own validation
+   * stays in charge without JavaScript; with it, these messages replace the
+   * browser's bubbles, and focus goes to the first field that needs fixing.
+   */
+  document.querySelectorAll<HTMLFormElement>('form[data-enquiry]').forEach((form) => {
+    form.noValidate = true;
+    const fields = Array.from(form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[aria-describedby], textarea[aria-describedby]'));
+    const errorOf = (f: HTMLElement) => form.querySelector<HTMLElement>(`#${f.id}-error`);
+    const check = (f: HTMLInputElement | HTMLTextAreaElement) => {
+      const bad = !f.checkValidity();
+      f.setAttribute('aria-invalid', String(bad));
+      const e = errorOf(f);
+      if (e) e.hidden = !bad;
+      return !bad;
+    };
+    form.addEventListener('submit', async (event) => {
+      const bad = fields.filter((f) => !check(f));
+      if (bad.length) {
+        event.preventDefault();
+        bad[0]!.focus();
+        return;
+      }
+
+      event.preventDefault();
+      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+      }
+
+      try {
+        const formData = new FormData(form);
+        await fetch(form.action || '/api/enquiry', {
+          method: 'POST',
+          body: formData,
+          headers: { Accept: 'application/json' },
+        });
+      } catch (err) {
+        console.warn('Form submission fetch error:', err);
+      } finally {
+        window.location.href = '/thank-you';
+      }
+    });
+    fields.forEach((f) =>
+      f.addEventListener('input', () => {
+        if (f.getAttribute('aria-invalid') === 'true') check(f);
+      }),
+    );
+  });
+</script>

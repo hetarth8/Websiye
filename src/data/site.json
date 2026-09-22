@@ -1,0 +1,168 @@
+{
+  "name": "AHT Construction",
+  "legalName": "AHT Construction Pvt. Ltd.",
+  "slogan": "Highway to Highrise",
+  "founded": 2001,
+  "principal": "Ajay H. Thakur",
+  "principalRole": "Founder & Chairman",
+  "tagline": "Road, Industrial & Real Estate Development",
+  "description": "AHT Construction Pvt. Ltd. has built across South Gujarat, Daman and Silvassa since 2001 — 2,180+ km of roads, 40 lakh sq.ft. of industrial space, and seven integrated divisions from quarrying and ready-mix concrete through to turn-key real estate.",
+  "vision": "Creating super value for our clients, business associates and society — on a continuous basis.",
+  "mission": "To remain a company South Gujarat trusts — built on commitment, care and faith.",
+  "originStory": "Two decades ago, one road crew in Daman set out to build South Gujarat. Today, AHT Construction leads Road, Industrial and Real Estate development across the private and government sectors.",
+  "phone": "+91 72858 52005",
+  "phoneHref": "tel:+917285852005",
+  "phoneAlt": "+91 95941 54079",
+  "phoneAltHref": "tel:+919594154079",
+  "officePhones": [
+    "+91 72858 52010",
+    "+91 72858 52025"
+  ],
+  "whatsapp": "917285852005",
+  "whatsappMessage": "Hello AHT Construction, I would like to enquire about a project.",
+  "email": "ajaythakurconstruction@yahoo.in",
+  "website": "www.ahtconstruction.in",
+  "address": {
+    "line1": "275, 276, 277, 2nd Floor, Amidhara Complex",
+    "line2": "Near N.H. 48, Near GIDC Char Rasta",
+    "city": "Vapi",
+    "state": "Gujarat",
+    "postalCode": "396195",
+    "country": "IN"
+  },
+  "offices": [
+    {
+      "city": "Vapi",
+      "label": "Head Office",
+      "lines": [
+        "275, 276, 277, 2nd Floor, Amidhara Complex",
+        "Near N.H. 48, Near GIDC Char Rasta",
+        "Vapi – 396195, Gujarat"
+      ]
+    },
+    {
+      "city": "Daman",
+      "label": "Branch Office",
+      "lines": [
+        "F-12, Ace Shopping Mall, Plot No. 1/23",
+        "Katheri, Nani Daman",
+        "Daman – 396210"
+      ]
+    },
+    {
+      "city": "Silvassa",
+      "label": "Branch Office",
+      "lines": [
+        "C/o. Satyanarayan Mishra",
+        "Behind Ramji Mandir, Dadra",
+        "Dadra – 396230, D&NH"
+      ]
+    }
+  ],
+  "mapQuery": "Amidhara Complex, GIDC Char Rasta, Vapi, Gujarat 396195",
+  "areasServed": [
+    "Vapi",
+    "Daman",
+    "Silvassa",
+    "Valsad",
+    "Sarigam",
+    "Umbergaon",
+    "Dadra & Nagar Haveli"
+  ],
+  "registration": {
+    "activity": "Road & Civil Construction",
+    "auditor": "Dipti Sharma & Co.",
+    "gst": [
+      {
+        "state": "Gujarat",
+        "number": "24AXSPS8572J1ZI"
+      },
+      {
+        "state": "Daman",
+        "number": "25AXSPS8572J1ZG"
+      },
+      {
+        "state": "Silvassa",
+        "number": "26AXSPS8572J1ZE"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "value": "200+",
+      "unit": "work orders",
+      "label": "Road work completed"
+    },
+    {
+      "value": "2,180+",
+      "unit": "km",
+      "label": "Roads laid"
+    },
+    {
+      "value": "40+",
+      "unit": "lakh sq.ft.",
+      "label": "Industrial built"
+    },
+    {
+      "value": "15+",
+      "unit": "lakh sq.ft.",
+      "label": "Commercial space"
+    },
+    {
+      "value": "80+",
+      "unit": "acres",
+      "label": "Industrial plotting (developer)"
+    },
+    {
+      "value": "3",
+      "unit": "",
+      "label": "Owned quarries"
+    },
+    {
+      "value": "2001",
+      "unit": "",
+      "label": "Year founded"
+    }
+  ],
+  "people": [
+    {
+      "value": "150+",
+      "label": "Professionals"
+    },
+    {
+      "value": "300+",
+      "label": "Engineers"
+    },
+    {
+      "value": "2,000+",
+      "label": "Field employees"
+    }
+  ],
+  "transition": "world",
+  "nav": [
+    {
+      "label": "About",
+      "href": "/#about"
+    },
+    {
+      "label": "Divisions",
+      "href": "/#services"
+    },
+    {
+      "label": "Capabilities",
+      "href": "/#fleet"
+    },
+    {
+      "label": "Projects",
+      "href": "/projects"
+    },
+    {
+      "label": "Government",
+      "href": "/#government"
+    },
+    {
+      "label": "Contact",
+      "href": "/#contact"
+    }
+  ]
+}

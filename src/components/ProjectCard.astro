@@ -1,0 +1,95 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import StatusChip from './StatusChip.astro';
+import ProjectPlaceholder from './ProjectPlaceholder.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  class?: string;
+  /** The first cards on a page load eagerly; the rest wait for the scroll. */
+  eager?: boolean;
+}
+
+const { project, class: className = '', eager = false } = Astro.props;
+const { title, cover, client, status, category, size, duration } = project.data;
+
+const CATEGORY_LABELS = {
+  road: 'Road Work',
+  industrial: 'Industrial',
+  commercial: 'Commercial',
+  residential: 'Residential',
+  institutional: 'Institutional',
+} as const;
+
+// The built area is the figure beside the category, in the place the contract
+// value used to hold: costs are not published anywhere on the site. It is
+// shown exactly as entered ("2.5 lac sq.ft.", "180 flats") and omitted when blank.
+const area = size?.trim();
+const heading = client ?? title;
+const meta = [duration].filter(Boolean).join(' · ');
+---
+
+{/*
+  The project card. Its INFORMATION and its ORDER are the original card's,
+  unchanged — status, then category and area, then who, then what, then how
+  long, then "View project" — only the styling is the redesign's. The picture
+  keeps its proportions: cropped to fill a 4:3 frame, never stretched.
+*/}
+<article
+  class:list={['project-card group relative flex flex-col', className]}
+  data-reveal
+  data-category={category}
+  data-status={status}
+>
+  <div class="project-card__media">
+    {
+      cover ? (
+        <Image
+          src={cover}
+          alt={title}
+          widths={[480, 760, 1100]}
+          sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw"
+          quality={86}
+          loading={eager ? 'eager' : 'lazy'}
+        />
+      ) : (
+        <ProjectPlaceholder category={category} />
+      )
+    }
+    <div class="absolute left-3.5 top-3.5 z-10">
+      <StatusChip status={status} />
+    </div>
+  </div>
+
+  <div class="flex flex-1 flex-col px-5 pb-5 pt-4">
+    <div class="flex items-baseline justify-between gap-3">
+      <span class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-accent-600">
+        {CATEGORY_LABELS[category]}
+      </span>
+      {area && (
+        <span class="text-right font-display text-base font-bold leading-tight tabular-nums text-ink-950">
+          {area}
+        </span>
+      )}
+    </div>
+
+    <h3 class="title-plain mt-2 text-xl leading-snug text-ink-950">
+      <a
+        href={`/projects/${project.id}`}
+        aria-label={client ? `${client} — ${title}` : title}
+        class="after:absolute after:inset-0"
+      >
+        {heading}
+      </a>
+    </h3>
+    {client && <p class="mt-1 text-sm leading-snug text-stone-600">{title}</p>}
+    {meta && <p class="mt-2 font-mono text-xs text-stone-600">{meta}</p>}
+
+    <span class="link-arrow mt-auto pt-5 text-sm">
+      View project
+      <Icon name="arrowRight" class="h-4 w-4" />
+    </span>
+  </div>
+</article>

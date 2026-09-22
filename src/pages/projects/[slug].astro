@@ -1,0 +1,239 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import StatusChip from '../../components/StatusChip.astro';
+import site from '../../data/site.json';
+
+export const getStaticPaths = (async () => {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}) satisfies GetStaticPaths;
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+
+const { title, cover, summary, client, duration, size, location, status, category, gallery } =
+  project.data;
+
+const CATEGORY_LABELS = {
+  road: 'Road Work',
+  industrial: 'Industrial',
+  commercial: 'Commercial',
+  residential: 'Residential',
+  institutional: 'Institutional',
+} as const;
+
+// The facts that establish the project at a glance — the original set, in
+// the original order: size first (in the place the contract value used to
+// hold; costs are not published anywhere), then client, duration, location.
+// Anything not yet filled in is omitted rather than printed blank.
+const facts = [
+  { label: 'Size', value: size, accent: true },
+  { label: 'Client', value: client },
+  { label: 'Duration', value: duration },
+  { label: 'Location', value: location },
+].filter((f): f is { label: string; value: string; accent?: boolean } => Boolean(f.value?.trim()));
+
+/** The district of the city this project's header looks into. */
+const WORLD = {
+  road: 'highway',
+  industrial: 'industrial',
+  commercial: 'skyline',
+  residential: 'residential',
+  institutional: 'skyline',
+} as const;
+
+const related = (await getCollection('projects'))
+  .filter((entry) => entry.id !== project.id && entry.data.category === category)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+
+const whatsappHref = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(
+  `Hello AHT, I would like to discuss a project similar to "${title}".`,
+)}`;
+---
+
+<BaseLayout title={title} description={summary ?? `${title} — a project by ${site.legalName}.`}>
+  <article data-stage-sequence>
+    <!-- Header -->
+    <section class="relative isolate overflow-hidden bg-concrete pb-14 pt-32 md:pb-20 md:pt-40">
+      <div class="absolute inset-0 -z-10" aria-hidden="true">
+        <canvas class="terrain terrain--page" data-terrain="page" data-world-district={WORLD[category]}></canvas>
+      </div>
+      <div class="container-x">
+        <nav aria-label="Breadcrumb" class="mb-6">
+          <ol class="flex flex-wrap items-center gap-2 text-sm text-stone-600">
+            <li><a href="/" class="transition-colors hover:text-accent-700">Home</a></li>
+            <li class="flex items-center gap-2">
+              <Icon name="arrowRight" class="h-3.5 w-3.5" />
+              <a href="/projects" class="transition-colors hover:text-accent-700">Projects</a>
+            </li>
+            <li class="flex items-center gap-2">
+              <Icon name="arrowRight" class="h-3.5 w-3.5" />
+              <span aria-current="page" class="text-ink-950">{title}</span>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="flex flex-wrap items-center gap-3" data-stage="1">
+          <StatusChip status={status} />
+          <span class="font-display text-xs font-semibold uppercase tracking-[0.18em] text-accent-700">
+            {CATEGORY_LABELS[category]}
+          </span>
+        </div>
+
+        <h1 class="mt-5 max-w-4xl text-4xl text-ink-950 sm:text-5xl lg:text-6xl" data-stage="2">{title}</h1>
+
+        {
+          summary && (
+            <p class="mt-6 max-w-2xl text-lg leading-relaxed text-stone-700" data-stage="3">
+              {summary}
+            </p>
+          )
+        }
+
+        {/* Key facts as an editorial strip — the figures that establish the
+            project up front, so the sidebar can stay focused on getting in
+            touch. */}
+        {
+          facts.length > 0 && (
+            <dl class="mt-9 flex flex-wrap gap-x-10 gap-y-6" data-stage="4">
+              {facts.map((fact) => (
+                <div>
+                  <dt class="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-stone-600">
+                    {fact.label}
+                  </dt>
+                  <dd
+                    class:list={[
+                      'mt-1.5 font-display text-2xl font-bold leading-none',
+                      fact.accent ? 'text-accent-600' : 'text-ink-950',
+                    ]}
+                  >
+                    {fact.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+      </div>
+    </section>
+
+    <!-- Cover. Optional, so a project added from /admin before its photograph
+         is uploaded still renders a complete page. Shown at its true aspect
+         ratio — never cropped or stretched. -->
+    {
+      cover && (
+        <section class="bg-concrete pt-2" data-stage="5">
+          <div class="container-x">
+            <figure class="project-figure">
+              <Image
+                src={cover}
+                alt={title}
+                widths={[700, 1100, 1600]}
+                sizes="(min-width: 1280px) 1152px, 92vw"
+                quality={90}
+                class="h-auto w-full"
+                loading="eager"
+                fetchpriority="high"
+              />
+            </figure>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Body -->
+    <section class="bg-concrete pb-20 pt-14 md:pb-28">
+      <div class="container-x">
+        <div class="grid gap-12 lg:grid-cols-[1fr_320px] lg:gap-16">
+          <div class="max-w-2xl">
+            <div
+              class="text-base leading-relaxed text-stone-700 [&>p]:mt-5 [&>p:first-child]:mt-0 [&_a]:text-ink-950 [&_a]:underline [&_a]:underline-offset-4 [&_h2]:mt-10 [&_h2]:text-3xl [&_h2]:text-ink-950 [&_h3]:mt-8 [&_h3]:text-2xl [&_h3]:text-ink-950 [&_li]:mt-2 [&_ul]:mt-5 [&_ul]:list-disc [&_ul]:pl-5"
+            >
+              <Content />
+            </div>
+
+            {
+              gallery && gallery.length > 0 && (
+                <div class="mt-14">
+                  <h2 class="font-display text-xs font-semibold uppercase tracking-[0.2em] text-stone-600">
+                    Gallery
+                  </h2>
+                  {/* Masonry columns keep every photo at its own aspect ratio
+                      rather than forcing a uniform crop. */}
+                  <div class="mt-5 gap-4 [column-gap:1rem] sm:columns-2">
+                    {gallery.map((photo, index) => (
+                      <Image
+                        src={photo}
+                        alt={`${title} — photograph ${index + 1}`}
+                        widths={[400, 700]}
+                        sizes="(min-width: 640px) 45vw, 90vw"
+                        quality={85}
+                        class="mb-4 block h-auto w-full break-inside-avoid rounded-xl"
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+          </div>
+
+          <aside class="lg:sticky lg:top-28 lg:self-start">
+            {/* The facts live in the hero now, so the sidebar does one job:
+                turn a reader into an enquiry. */}
+            <div class="rounded-2xl bg-concrete p-6 ring-1 ring-ink-950/10">
+              <p class="font-display text-xl font-semibold text-ink-950">
+                Planning something similar?
+              </p>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">
+                Send us the drawings or scope and we will come back with a stage-wise estimate.
+              </p>
+              <div class="mt-5 flex flex-col gap-3">
+                <a href="/#contact" class="btn btn-primary w-full !text-sm"> Send Enquiry </a>
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-outline-dark w-full !text-sm"
+                >
+                  <Icon name="whatsapp" class="h-4 w-4" />
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    {
+      related.length > 0 && (
+        <section class="section bg-mist-50">
+          <div class="container-x">
+            <div class="flex flex-wrap items-end justify-between gap-6">
+              <h2 class="text-3xl text-ink-950 md:text-4xl">Related projects</h2>
+              <a href="/projects" class="link-arrow text-sm">
+                All Projects
+                <Icon name="arrowRight" class="h-4 w-4" />
+              </a>
+            </div>
+            <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+              {related.map((entry) => (
+                <ProjectCard project={entry} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>

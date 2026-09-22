@@ -1,0 +1,223 @@
+---
+import site from '../data/site.json';
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+
+const whatsappHref = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(site.whatsappMessage)}`;
+
+/**
+ * Which nav item represents the page you are on.
+ *
+ * Most of the nav points at homepage anchors (`/#services`), which are not
+ * pages — the scroll rail already marks those as you pass them, so marking
+ * them here too would be a second, competing signal. Only the entries that are
+ * real routes (`/projects`) can be "current", and a project detail page counts
+ * as being under Projects.
+ */
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+/** The start window only exists on the home document. */
+const isHome = path === '/';
+
+const isCurrent = (href: string) => {
+  if (href.includes('#')) return false;
+  const target = href.replace(/\/+$/, '') || '/';
+  return path === target || (target !== '/' && path.startsWith(`${target}/`));
+};
+---
+
+<header
+  id="site-header"
+  class="fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,padding] duration-300"
+  data-header
+>
+  <div class="container-x">
+    <div class="flex items-center justify-between gap-6 py-3">
+      {/* The logo reopens the start window.
+
+          On the home page start.ts intercepts the click and reopens the window
+          in place. Everywhere else the window does not exist on this document,
+          so the logo is an ordinary link to the home page carrying `#start`,
+          and start.ts opens it on arrival — including for the visitor whose
+          referrer would otherwise have suppressed it.
+
+          It stays an <a> to a real address in both cases, so middle-click,
+          "open in new tab" and crawlers all behave exactly as they did. */}
+      <a
+        href="/#start"
+        class="shrink-0 rounded"
+        data-start-open={isHome ? '' : undefined}
+        aria-label={isHome
+          ? `${site.legalName} — open the welcome window`
+          : `${site.legalName} — home`}
+      >
+        <Logo tone="dark" />
+      </a>
+
+      <nav aria-label="Primary" class="hidden lg:block">
+        <ul class="flex items-center gap-6">
+          {
+            site.nav.map((item) => (
+              <li>
+                {/* The violet underscore is drawn under the current route only.
+                    aria-current carries the same fact for screen readers, so
+                    the state is never colour-only. */}
+                <a
+                  href={item.href}
+                  aria-current={isCurrent(item.href) ? 'page' : undefined}
+                  class:list={[
+                    'nav-link font-display text-[0.8125rem] font-semibold uppercase tracking-[0.03em] transition-colors',
+                    isCurrent(item.href) ? 'is-current text-accent-700' : 'text-ink-950 hover:text-accent-700',
+                  ]}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="hidden items-center gap-3 lg:flex">
+        <a
+          href={site.phoneHref}
+          class="flex items-center gap-2 whitespace-nowrap font-display text-[0.9375rem] font-semibold text-ink-950 transition-colors hover:text-accent-600"
+        >
+          <Icon name="phone" class="h-5 w-5 text-accent-600" />
+          {site.phone}
+        </a>
+        <a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-primary !min-h-11 !px-5 !text-sm"
+        >
+          <Icon name="whatsapp" class="h-4 w-4" />
+          WhatsApp
+        </a>
+      </div>
+
+      <button
+        type="button"
+        class="flex h-12 w-12 items-center justify-center text-ink-950 transition-colors hover:bg-ink-950/5 lg:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Menu"
+        data-menu-toggle
+      >
+        {/* Both icons are decorative — the button carries the name, and
+            aria-expanded carries the state. */}
+        <Icon name="menu" class="h-7 w-7" data-menu-icon-open />
+        <Icon name="close" class="hidden h-7 w-7" data-menu-icon-close />
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile panel. Hidden from the tab order until opened. -->
+  <div
+    id="mobile-nav"
+    class="hidden border-t border-hairline bg-concrete lg:hidden"
+    data-mobile-nav
+  >
+    <div class="container-x py-6">
+      <nav aria-label="Mobile">
+        <ul class="flex flex-col">
+          {
+            site.nav.map((item) => (
+              <li class="border-b border-hairline last:border-0">
+                <a
+                  href={item.href}
+                  class="block py-4 font-display text-lg font-semibold uppercase tracking-[0.12em] text-ink-950"
+                  data-mobile-link
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <div class="mt-6 flex flex-col gap-3">
+        <a href={site.phoneHref} class="btn btn-primary w-full">
+          <Icon name="phone" class="h-5 w-5" />
+          {site.phone}
+        </a>
+        <a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-outline-dark w-full"
+        >
+          <Icon name="whatsapp" class="h-5 w-5" />
+          WhatsApp Us
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const panel = document.querySelector<HTMLElement>('[data-mobile-nav]');
+  const iconOpen = document.querySelector<SVGElement>('[data-menu-icon-open]');
+  const iconClose = document.querySelector<SVGElement>('[data-menu-icon-close]');
+
+  // Solid background once the hero has scrolled past, transparent over it.
+  if (header) {
+    // Glass, not a solid bar. A translucent white with a heavy blur and a
+    // touch of saturation is what lets the page show through as colour while
+    // the type on top stays fully legible — the Apple/Linear sticky-bar
+    // treatment. All classes, so it survives the hash-based CSP.
+    const SOLID = [
+      'bg-white/72',
+      'backdrop-blur-xl',
+      'backdrop-saturate-150',
+      'border-b',
+      'border-hairline',
+      'shadow-xs',
+    ];
+    const applyScrollState = () => {
+      header.classList.toggle('is-stuck', window.scrollY > 24);
+      SOLID.forEach((cls) => header.classList.toggle(cls, window.scrollY > 24));
+    };
+    applyScrollState();
+    window.addEventListener('scroll', applyScrollState, { passive: true });
+  }
+
+  if (toggle && panel && iconOpen && iconClose) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      panel.classList.toggle('hidden', !open);
+      iconOpen.classList.toggle('hidden', open);
+      iconClose.classList.toggle('hidden', !open);
+      // Stop the page scrolling behind the open panel.
+      document.body.style.overflow = open ? 'hidden' : '';
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    // Close after navigating to an anchor, and on Escape.
+    panel.querySelectorAll('[data-mobile-link]').forEach((link) => {
+      link.addEventListener('click', () => setOpen(false));
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+</script>
+
+<style>
+  /* The hero is a pale plate now, so the old black scrim would be a dark bar
+     across the top of a light page. A faint concrete veil does the same job —
+     keeps the ink logotype and nav legible over the brightest part of the
+     photograph — without reintroducing a dark ground. */
+  [data-header]:not(.is-stuck) {
+    background-image: linear-gradient(to bottom, rgb(232 229 222 / 0.85), rgb(232 229 222 / 0));
+  }
+</style>

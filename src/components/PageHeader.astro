@@ -1,0 +1,79 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  image: ImageMetadata;
+  /** Trail of { label, href } — the current page is passed as plain text. */
+  breadcrumbs?: Array<{ label: string; href?: string }>;
+}
+
+const { eyebrow, title, lead, image, breadcrumbs = [] } = Astro.props;
+---
+
+<section class="relative isolate overflow-hidden bg-concrete">
+  <div class="absolute inset-0 -z-10">
+    <Image
+      src={image}
+      alt=""
+      widths={[900, 1400, 1920]}
+      sizes="100vw"
+      class="h-full w-full object-cover object-center"
+      loading="eager"
+      fetchpriority="high"
+      aria-hidden="true"
+      data-scroll-zoom="1.1"
+    />
+    <div class="absolute inset-0 bg-concrete/80" aria-hidden="true"></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-concrete via-concrete/45 to-concrete/70"
+      aria-hidden="true"
+    >
+    </div>
+
+    {/* Every page other than the home page has the same empty right-hand third
+        the hero had, so it gets the same drawing. Masked to zero under the
+        breadcrumb, title and lead, which are max-w-4xl at the left. */}
+    <canvas class="terrain terrain--page" data-terrain="page" data-world-district="skyline" aria-hidden="true"></canvas>
+    <div class="beam beam--light" aria-hidden="true"></div>
+    <div class="orbits orbits--page" aria-hidden="true">
+      <span class="orbit orbit--glass"></span>
+      <span class="orbit"></span>
+    </div>
+  </div>
+
+  <div class="container-x pb-16 pt-36 md:pb-24 md:pt-44">
+    {
+      breadcrumbs.length > 0 && (
+        <nav aria-label="Breadcrumb" class="mb-6">
+          <ol class="flex flex-wrap items-center gap-2 text-sm text-stone-600">
+            {breadcrumbs.map((crumb, index) => (
+              <li class="flex items-center gap-2">
+                {index > 0 && <Icon name="arrowRight" class="h-3.5 w-3.5" />}
+                {crumb.href ? (
+                  <a href={crumb.href} class="transition-colors hover:text-accent-700">
+                    {crumb.label}
+                  </a>
+                ) : (
+                  <span aria-current="page" class="text-ink-950">
+                    {crumb.label}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+
+    <h1 class="mt-5 max-w-4xl text-4xl text-ink-950 sm:text-5xl lg:text-6xl">{title}</h1>
+
+    {lead && <p class="mt-5 max-w-2xl text-lg leading-relaxed text-stone-700">{lead}</p>}
+  </div>
+</section>

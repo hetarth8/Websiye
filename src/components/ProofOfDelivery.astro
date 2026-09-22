@@ -1,0 +1,114 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { getCollection } from 'astro:content';
+import site from '../data/site.json';
+
+/**
+ * Proof of delivery — the trust section, built entirely from the record.
+ *
+ * This deliberately carries no testimonial quotes. Inventing praise and
+ * attributing it to real companies would be fabricating an endorsement, and a
+ * procurement buyer trusts a verifiable delivery record more than a quote
+ * anyway. Every figure here is derived from the project and client collections,
+ * so it stays true as the owner adds work from /admin.
+ */
+const projects = await getCollection('projects');
+const government = await getCollection('government');
+
+
+/**
+ * The headline total: every completed work, road and building together.
+ *
+ * The road figure and the project book count DIFFERENT things, and adding them
+ * naively double-counts. Five of the documented projects are filed under the
+ * `road` category, and those are already inside the 200+ road work orders — so
+ * they are excluded here rather than counted twice. Everything else (the
+ * industrial, commercial, residential and institutional work) is genuinely
+ * additional.
+ *
+ * The road figure is read from site.json rather than hardcoded, so changing it
+ * in one place moves every total that depends on it.
+ */
+const roadStat = site.stats.find((x) => x.label === 'Road work completed');
+const roadOrders = Number((roadStat?.value ?? '0').replace(/[^0-9]/g, ''));
+
+/** Documented projects that are NOT road work, i.e. not already counted above. */
+const buildingProjects = projects.filter((p) => p.data.category !== 'road');
+const totalWorks = roadOrders + buildingProjects.length;
+
+const proofs = [
+  {
+    // The combined figure the owner asked for. Shown with its own arithmetic
+    // spelled out underneath, because a large round number with no working is
+    // exactly the kind of claim a procurement buyer discounts.
+    figure: `${totalWorks}+`,
+    label: 'Projects completed',
+    note: `${roadOrders}+ road work orders and ${buildingProjects.length} industrial & building projects`,
+  },
+  {
+    figure: String(government.length),
+    label: 'Public authorities served',
+    note: 'Panchayats, municipal councils and corporations',
+  },
+];
+---
+
+<section id="proof" class="scroll-mt-24 border-t-2 border-hairline bg-mist-50 py-20 md:py-28">
+  <div class="container-x">
+    <SectionHeading
+      eyebrow="Proof of delivery"
+      title="The record, not the sales pitch"
+      meta={`${totalWorks}+ completed`}
+      lead="Every number here is counted from the actual project book — completed work and public contracts."
+    />
+
+    <!-- Two proof blocks. The grid is two columns at every width above phone: a
+         gap-px grid shows its hairline ground through any EMPTY track, so a
+         four-column grid holding two blocks would paint two blank tiles. -->
+    <div class="rule-hard mt-12 grid gap-px bg-hairline sm:grid-cols-2" data-reveal-group>
+      {
+        proofs.map((p, i) => (
+          <div
+            class:list={[
+              'flex flex-col justify-between p-6 md:p-7',
+              i === 0 ? 'panel-light' : 'bg-mist-50',
+            ]}
+            data-reveal
+          >
+            <p
+              class:list={[
+                'font-display text-6xl font-bold leading-none tabular-nums md:text-7xl',
+                i === 0 ? 'text-ink-950' : 'text-ink-950',
+              ]}
+            >
+              {p.figure}
+            </p>
+            <div class="mt-6">
+              <p
+                class:list={[
+                  'font-display text-base font-bold uppercase tracking-wide',
+                  i === 0 ? 'text-ink-950' : 'text-ink-950',
+                ]}
+              >
+                {p.label}
+              </p>
+              <p
+                class:list={[
+                  'mt-1.5 text-sm leading-snug',
+                  i === 0 ? 'text-stone-600' : 'text-stone-600',
+                ]}
+              >
+              {p.note}
+              </p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    {/* The credentials chip strip that used to sit here has moved into its own
+        Credentials section, which can show the issuer and reference number as
+        well as the title. Repeating the titles here would be the same beat
+        twice on one page. */}
+  </div>
+</section>

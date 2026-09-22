@@ -1,0 +1,83 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import quarry from '../assets/machinery/quarry-excavation.jpg';
+
+/**
+ * The one full-strength band on the page — now a steel plate, not an amber one.
+ *
+ * It exists as punctuation. When every section alternates between two light
+ * tones the eye stops registering the change and the page flattens into a deck;
+ * a single full-bleed break, placed where the argument turns from "what we do"
+ * to "why we can", gives the scroll an actual shape.
+ *
+ * It was solid amber-500 for a full screen height. That is what the owner meant
+ * by "like a comic": a 100%-saturation hue across a whole viewport stops being
+ * an accent and becomes a poster. It is now `.plate-steel` — brushed steel with
+ * a rolled edge, which answers "rugged / metallic" and is measurably NOT the
+ * black they rejected earlier (steel-700 is 6.2x the luminance of ink-950 and
+ * resolves against pure black at 2.18:1; ink-950 does not, at 1.19:1).
+ *
+ * Type on it is white at 9.62:1 and white/70 at 5.71:1 — both verified against
+ * the sheen's DARKEST and LIGHTEST point, not its average, which is why the
+ * gradient is held to under 3% luminance travel.
+ *
+ * Amber survives here as a 4px keyline on the eyebrow: brand livery at a few
+ * percent of the pixels instead of all of them.
+ */
+---
+
+<section class="plate-steel relative isolate overflow-hidden py-14 md:py-20">
+  <div class="absolute inset-0 -z-10" aria-hidden="true">
+    {/* The sentence, made visible: the same wireframe terrain and highway as the
+        hero, in its dark mode, centred. It sits UNDER the photograph's overlay
+        blend and under the left-hand scrim, so the type zone's luminance stays
+        inside the plate's ~3% ceiling. Drawn by src/scripts/terrain.ts. */}
+    <canvas class="terrain terrain--band" data-terrain="band" aria-hidden="true"></canvas>
+    <Image
+      src={quarry}
+      alt=""
+      widths={[900, 1400]}
+      sizes="100vw"
+      quality={80}
+      class="h-full w-full object-cover opacity-[0.18] mix-blend-overlay"
+      data-scroll-zoom="1.14"
+      loading="lazy"
+    />
+    {/* Mill grain over the plate, and a scrim that keeps the left-hand column —
+        where all the type sits — at the plate's flat value, so the measured
+        contrast holds where it is actually needed. */}
+    <div class="hatch-mill absolute inset-0"></div>
+    {/* Light ray, masked to the right 55% so it never crosses the type. */}
+    <div class="beam beam--dark" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-steel-700/90 via-steel-700/55 to-steel-700/5">
+    </div>
+    <div class="orbits orbits--band" aria-hidden="true">
+      <span class="orbit orbit--glass"></span>
+    </div>
+  </div>
+
+  <div class="container-x">
+    <p class="index-label mark-amber !text-white/70">Why we can hold a programme</p>
+
+    <h2 class="statement mt-5 max-w-4xl text-white">
+      We own the ground<br />we build on.
+    </h2>
+
+    <p class="mt-5 max-w-xl text-lg leading-relaxed text-white/70">
+      Three quarries, three ready-mix plants and two asphalt drum mix plants. When the aggregate,
+      the concrete and the mix all come from inside the company, a programme stops depending on
+      somebody else's delivery date.
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-center gap-x-12 gap-y-6">
+      <a href="/#fleet" class="btn btn-primary magnetic">
+        See the plant
+        <Icon name="arrowRight" class="h-5 w-5" />
+      </a>
+      <p class="font-mono text-xs uppercase tracking-[0.24em] text-white/70">
+        Vapi &middot; Daman &middot; Silvassa
+      </p>
+    </div>
+  </div>
+</section>

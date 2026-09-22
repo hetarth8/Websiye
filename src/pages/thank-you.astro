@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import site from '../data/site.json';
+
+const whatsappHref = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(site.whatsappMessage)}`;
+---
+
+<BaseLayout
+  title="Enquiry received"
+  description="Thank you — your enquiry has reached AHT Construction."
+  noindex
+>
+  <section class="flex min-h-[70svh] items-center bg-concrete pt-24">
+    <div class="container-x py-20 text-center">
+      <span
+        class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent-50 border border-accent-100 text-accent-600"
+      >
+        <Icon name="check" class="h-10 w-10" strokeWidth={2.5} />
+      </span>
+
+      <h1 class="mt-8 text-4xl text-ink-950 sm:text-5xl">Enquiry received</h1>
+
+      <p class="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-stone-600">
+        Thank you for getting in touch. We will review your requirement and come back to you
+        shortly. If it is urgent, call or message us directly.
+      </p>
+
+      <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <a href={site.phoneHref} class="btn btn-primary">
+          <Icon name="phone" class="h-5 w-5" />
+          {site.phone}
+        </a>
+        <a href={whatsappHref} target="_blank" rel="noopener noreferrer" class="btn btn-outline-dark">
+          <Icon name="whatsapp" class="h-5 w-5" />
+          WhatsApp
+        </a>
+      </div>
+
+      <p class="mt-10">
+        <a href="/" class="link-arrow text-sm">
+          Back to home
+          <Icon name="arrowRight" class="h-4 w-4" />
+        </a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

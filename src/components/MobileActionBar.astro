@@ -1,0 +1,29 @@
+---
+import site from '../data/site.json';
+import Icon from './Icon.astro';
+
+const whatsappHref = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(site.whatsappMessage)}`;
+---
+
+<!-- Always-there conversion on a phone: the two actions a buyer actually takes.
+     Hidden on desktop, where the header already carries them. -->
+<div
+  class="pb-safe fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-hairline bg-concrete/95 backdrop-blur lg:hidden"
+>
+  <a
+    href={site.phoneHref}
+    class="flex min-h-14 items-center justify-center gap-2.5 font-display text-sm font-semibold uppercase tracking-wider text-ink-950"
+  >
+    <Icon name="phone" class="h-5 w-5 text-accent-600" strokeWidth={1.5} />
+    Call
+  </a>
+  <a
+    href={whatsappHref}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="bg-accent-600 text-white flex min-h-14 items-center justify-center gap-2.5 font-display text-sm font-semibold uppercase tracking-wider"
+  >
+    <Icon name="whatsapp" class="h-5 w-5" />
+    WhatsApp
+  </a>
+</div>

@@ -1,0 +1,339 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import StatusChip from '../../components/StatusChip.astro';
+import site from '../../data/site.json';
+
+/**
+ * One page per division.
+ *
+ * The site used to say everything on a single very long home page, and the
+ * owner's note was that it all sits "in one window". This is the split: the
+ * home page now makes the argument, and each division gets its own page with
+ * the detail underneath it.
+ *
+ * The important thing about these pages is that they are NOT a longer version
+ * of the same summary. Every block below is assembled from content that already
+ * exists elsewhere on the site — the projects filed under this division, the
+ * quarries and plants that feed it, the equipment register entry for it — so
+ * opening a division tells you something the home page could not. Nothing here
+ * is written copy about the business; where the owner wants to say more, the
+ * `body` of the division's markdown file renders as the long description, and
+ * until they write one the page simply omits that block.
+ */
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((service) => ({
+    params: { slug: service.id },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+const { Content } = await render(service);
+
+const d = service.data;
+
+// --- everything that belongs to this division ------------------------------
+const allProjects = await getCollection('projects');
+const projects = allProjects
+  .filter((p) => {
+    if (d.projectSector && p.data.sector === d.projectSector) return true;
+    if (d.projectCategory && p.data.category === d.projectCategory) return true;
+    return false;
+  })
+  .sort((a, b) => a.data.order - b.data.order);
+
+const facilities = d.facilityKind
+  ? (await getCollection('facilities'))
+      .filter((f) => f.data.kind === d.facilityKind)
+      .sort((a, b) => a.data.order - b.data.order)
+  : [];
+
+const equipment = d.equipmentGroup
+  ? (await getCollection('equipment'))
+      .filter((e) => e.data.group === d.equipmentGroup)
+      .sort((a, b) => a.data.order - b.data.order)
+  : [];
+
+const completed = projects.filter((p) => p.data.status === 'completed').length;
+const ongoing = projects.filter((p) => p.data.status === 'ongoing').length;
+
+/** Only counts that are real get a tile; a zero is left out rather than shown. */
+const counts = [
+  completed && { figure: String(completed), label: 'Projects completed' },
+  ongoing && { figure: String(ongoing), label: 'Under way now' },
+  facilities.length && { figure: String(facilities.length), label: 'Owned facilities' },
+  equipment.length && { figure: String(equipment.length), label: 'Plant line items' },
+].filter(Boolean) as Array<{ figure: string; label: string }>;
+
+// --- move between divisions without going back to the start ----------------
+/**
+ * Which district of the city each division's header looks into. Road and
+ * public-works divisions see the highway and its flyover; materials see the
+ * industrial estate; real estate sees homes; commercial sees the skyline.
+ */
+const WORLD: Record<string, string> = {
+  'road-development': 'highway',
+  'government-industrial': 'highway',
+  'industrial-development': 'industrial',
+  'mining-quarries': 'industrial',
+  'ready-mix-concrete': 'industrial',
+  'real-estate': 'residential',
+  commercials: 'skyline',
+};
+const worldDistrict = WORLD[service.id] ?? 'skyline';
+
+const ordered = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const index = ordered.findIndex((s) => s.id === service.id);
+const prev = ordered[(index - 1 + ordered.length) % ordered.length];
+const next = ordered[(index + 1) % ordered.length];
+---
+
+<BaseLayout
+  title={d.title}
+  description={d.summary}
+>
+  <!-- Header. -->
+  <section class="relative isolate overflow-hidden bg-concrete pt-32 pb-14 md:pt-40 md:pb-20">
+    {
+      d.image && (
+        <div class="absolute inset-0 -z-10" aria-hidden="true">
+          <Image
+            src={d.image}
+            alt=""
+            widths={[900, 1400, 1920]}
+            sizes="100vw"
+            quality={80}
+            class="h-full w-full object-cover opacity-[0.16]"
+            loading="eager"
+          />
+          <div class="absolute inset-0 bg-gradient-to-r from-concrete via-concrete/90 to-concrete/60" />
+        </div>
+      )
+    }
+    <div class="blueprint-grid-ink absolute inset-0 -z-10 opacity-45" aria-hidden="true"></div>
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <canvas class="terrain terrain--page" data-terrain="page" data-world-district={worldDistrict}></canvas>
+    </div>
+
+    <div class="container-x">
+      <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2">
+        <a href="/" class="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-accent-700 hover:underline">
+          Home
+        </a>
+        <span aria-hidden="true" class="font-mono text-[0.7rem] text-stone-600">/</span>
+        <a href="/#services" class="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-accent-700 hover:underline">
+          Divisions
+        </a>
+        <span aria-hidden="true" class="font-mono text-[0.7rem] text-stone-600">/</span>
+        <span class="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-stone-600">{d.title}</span>
+      </nav>
+
+      <div class="mt-8 flex items-start gap-5">
+        <span class="grid h-14 w-14 shrink-0 place-items-center border border-hairline bg-accent-50 border border-accent-100 text-accent-600 md:h-16 md:w-16">
+          <Icon name={d.icon} class="h-7 w-7 md:h-8 md:w-8" strokeWidth={1.5} />
+        </span>
+        <div class="min-w-0">
+          <p class="index-label">Division {String(index + 1).padStart(2, '0')} / {String(ordered.length).padStart(2, '0')}</p>
+          <h1 class="statement mt-4 text-ink-950">{d.title}</h1>
+        </div>
+      </div>
+
+      <p class="mt-7 max-w-2xl text-lg leading-relaxed text-stone-700">{d.lead ?? d.summary}</p>
+
+      {
+        d.highlights.length > 0 && (
+          <ul class="mt-8 flex flex-wrap gap-2.5">
+            {d.highlights.map((h) => (
+              <li class="border border-hairline bg-mist-50 px-3.5 py-2 font-display text-sm font-semibold text-ink-950">
+                {h}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- What this division has actually done, counted from the record. -->
+  {
+    counts.length > 0 && (
+      <section class="border-t-2 border-hairline bg-mist-50 py-12 md:py-16">
+        <div class="container-x">
+          {/* The column count MUST match how many tiles there actually are.
+              This block is a gap-px grid over an ink ground, so any empty cell
+              does not read as whitespace — it shows the ink through as a solid
+              black rectangle. Divisions have between one and four real counts
+              (a zero is dropped rather than displayed), so the track count is
+              chosen from the data instead of being fixed at four. Written as
+              whole literal class strings because Tailwind only ships classes it
+              can see spelled out. */}
+          <div
+            class:list={[
+              'grid gap-px rounded-xl border border-hairline bg-hairline overflow-hidden',
+              counts.length === 1 && 'grid-cols-1',
+              counts.length === 2 && 'sm:grid-cols-2',
+              counts.length === 3 && 'sm:grid-cols-2 lg:grid-cols-3',
+              counts.length >= 4 && 'sm:grid-cols-2 lg:grid-cols-4',
+            ]}
+            data-reveal-group
+          >
+            {counts.map((c, i) => (
+              <div
+                class:list={['p-6 md:p-7', i === 0 ? 'panel-light' : 'bg-mist-50']}
+                data-reveal
+              >
+                <p
+                  class:list={[
+                    'font-display text-5xl font-bold leading-none tabular-nums md:text-6xl',
+                    i === 0 ? 'text-ink-950' : 'text-ink-950',
+                  ]}
+                >
+                  {c.figure}
+                </p>
+                <p
+                  class:list={[
+                    'mt-4 font-display text-sm font-bold uppercase tracking-wide',
+                    i === 0 ? 'text-ink-950' : 'text-ink-950',
+                  ]}
+                >
+                  {c.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* The owner's own long description, if they have written one in /admin.
+      Omitted entirely rather than padded with filler. */}
+  <section class="section border-t-2 border-hairline bg-concrete">
+    <div class="container-x">
+      <div class="prose-aht max-w-2xl" data-reveal>
+        <Content />
+      </div>
+
+      {
+        facilities.length > 0 && (
+          <div class="mt-14" data-reveal-group>
+            <h2 class="index-label">What feeds this division</h2>
+            <ul class="mt-6 grid gap-px rounded-xl border border-hairline bg-hairline overflow-hidden sm:grid-cols-2 lg:grid-cols-3">
+              {facilities.map((f) => (
+                <li class="spot bg-mist-50 p-6" data-reveal>
+                  <h3 class="font-display text-lg text-ink-950">{f.data.name}</h3>
+                  {f.data.location && (
+                    <p class="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-accent-700">
+                      {f.data.location}
+                    </p>
+                  )}
+                  {f.data.capacity && (
+                    <p class="mt-3 text-sm leading-relaxed text-stone-600">{f.data.capacity}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      {
+        equipment.length > 0 && (
+          <div class="mt-14" data-reveal>
+            <h2 class="index-label">Plant on this division's register</h2>
+            <ul class="mt-6 grid gap-x-8 gap-y-0 sm:grid-cols-2 lg:grid-cols-3">
+              {equipment.map((e) => (
+                <li class="flex items-baseline justify-between gap-4 border-b border-hairline py-3">
+                  <span class="font-display text-sm font-semibold text-ink-950">{e.data.name}</span>
+                  <span class="font-mono text-xs tabular-nums text-stone-600">{e.data.quantity}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- The work itself. -->
+  {
+    projects.length > 0 && (
+      <section class="section border-t-2 border-hairline bg-mist-50">
+        <div class="container-x">
+          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p class="index-label">The work</p>
+              <h2 class="statement mt-5 max-w-2xl text-ink-950">
+                {projects.length} project{projects.length === 1 ? '' : 's'}<br />on this division.
+              </h2>
+            </div>
+            <a href="/projects" class="link-arrow text-sm">
+              Every project
+              <Icon name="arrowRight" class="h-4 w-4" />
+            </a>
+          </div>
+
+          <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+            {projects.slice(0, 6).map((project) => (
+              <div data-reveal>
+                <ProjectCard project={project} />
+              </div>
+            ))}
+          </div>
+
+          {projects.length > 6 && (
+            <ul class="mt-8 grid gap-x-8 sm:grid-cols-2" data-reveal>
+              {projects.slice(6).map((project) => (
+                <li class="flex items-center justify-between gap-4 border-b border-hairline py-3">
+                  <a
+                    href={`/projects/${project.id}/`}
+                    class="font-display text-sm font-semibold text-ink-950 hover:text-accent-700"
+                  >
+                    {project.data.title}
+                  </a>
+                  <StatusChip status={project.data.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Move to the next division without going back to the start. -->
+  <section class="border-t-2 border-hairline bg-concrete py-12">
+    <div class="container-x">
+      <div class="grid gap-px rounded-xl border border-hairline bg-hairline overflow-hidden sm:grid-cols-2">
+        <a href={`/divisions/${prev.id}/`} class="spot group bg-mist-50 p-6 md:p-7">
+          <p class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-accent-700">Previous</p>
+          <p class="mt-2 font-display text-xl font-bold text-ink-950 group-hover:text-accent-700">
+            {prev.data.title}
+          </p>
+        </a>
+        <a href={`/divisions/${next.id}/`} class="spot group bg-mist-50 p-6 text-right md:p-7">
+          <p class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-accent-700">Next</p>
+          <p class="mt-2 font-display text-xl font-bold text-ink-950 group-hover:text-accent-700">
+            {next.data.title}
+          </p>
+        </a>
+      </div>
+
+      <div class="mt-10 flex flex-wrap items-center gap-4">
+        <a href="/#contact" class="btn btn-primary magnetic">
+          Discuss a {d.title.toLowerCase()} project
+          <Icon name="arrowRight" class="h-5 w-5" />
+        </a>
+        <a href={site.phoneHref} class="btn btn-outline-dark">
+          <Icon name="phone" class="h-5 w-5" />
+          {site.phone}
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

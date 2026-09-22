@@ -1,0 +1,37 @@
+---
+import site from '../data/site.json';
+
+/**
+ * Header/footer lockup: the mark, the company name, and the slogan beneath it.
+ *
+ * The mark is the real vector artwork traced from the official visiting-card
+ * PDF. The wordmark stays as live type rather than being baked into the SVG so
+ * it recolours per background and stays crisp at any size.
+ */
+interface Props {
+  /** 'light' for dark backgrounds, 'dark' for white backgrounds. */
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+
+const { tone = 'dark', class: className = '' } = Astro.props;
+
+const nameColor = tone === 'light' ? 'text-white' : 'text-ink-950';
+// Crimson is the wordmark colour on the card. On dark grounds it goes muddy,
+// so the orange takes over there.
+const sloganColor = tone === 'light' ? 'text-amber-500' : 'text-crimson-600';
+---
+
+<span class={`flex items-center gap-3 ${className}`}>
+  <img src="/logo/aht-mark.svg" alt="" width="44" height="44" class="h-11 w-11 shrink-0" />
+  <span class="flex flex-col leading-none">
+    <span class={`font-display text-xl font-bold uppercase tracking-tight ${nameColor}`}>
+      {site.name}
+    </span>
+    <span
+      class={`mt-0.5 font-display text-[0.62rem] font-semibold uppercase tracking-[0.14em] ${sloganColor}`}
+    >
+      {site.slogan}
+    </span>
+  </span>
+</span>

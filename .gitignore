@@ -1,0 +1,52 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# generated: copied out of node_modules by scripts/copy-decap.mjs
+public/admin/decap/
+
+# generated from netlify.toml by scripts/emit-headers.mjs
+public/_headers
+
+# generated: self-contained preview artifacts and their transient bundler parts.
+#
+# These MUST stay ignored. Tailwind v4 auto-detects its content sources from the
+# project directory and honours .gitignore, so an un-ignored 3.7 MB preview file
+# is scanned as source — which means every class any PREVIOUS version of the
+# site ever used gets emitted into the new stylesheet. That is how `bg-night`
+# survived after the dark palette was removed, and it had pushed the shipped CSS
+# from ~74 KB to 88 KB with dead rules.
+# EVERY generated .html at the project root, whatever it is called. Narrower
+# patterns keep failing: each round ships under a new filename (to defeat the
+# owner's browser cache) and the new name keeps falling outside the last
+# pattern. All real source lives in src/ and public/, so nothing at the root
+# needs tracking and this can safely be a catch-all.
+AHT-*.html
+_parts_*.txt
+_parts_*.json
+_bundle_parts.json
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment
+.env
+.env.production
+.env*.local
+
+# editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+
+# archives
+*.zip

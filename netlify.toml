@@ -1,0 +1,47 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# ---------------------------------------------------------------------------
+# Security headers
+#
+# The script-src / style-src half of the CSP is emitted per page by Astro as a
+# <meta> tag containing a SHA-256 hash of every script and style it bundles
+# (see security.csp in astro.config.mjs). That approach cannot express
+# frame-ancestors, which is header-only — hence the CSP below. The two policies
+# are enforced independently and a resource must satisfy both.
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors 'none'"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    Cross-Origin-Resource-Policy = "same-origin"
+
+# Fingerprinted assets never change under the same name.
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/video/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# The CMS must never be indexed. Its own CSP stays permissive enough to reach
+# api.github.com for sign-in; Astro injects no meta CSP here because
+# public/admin/index.html is copied verbatim rather than rendered.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Cache-Control = "no-store"

@@ -1,0 +1,211 @@
+---
+import { getCollection } from 'astro:content';
+import StatusChip from './StatusChip.astro';
+import Icon from './Icon.astro';
+
+/**
+ * The projects as one scannable table, each row a summary with a "More Info"
+ * link through to the full page. Filters by stage and type; the whole set is in
+ * the HTML, and filtering only hides rows, so nothing is lost to search engines
+ * or a JS-less visitor.
+ */
+const projects = (await getCollection('projects')).sort((a, b) => {
+  const rank = { completed: 0, ongoing: 1, upcoming: 2 } as const;
+  return rank[a.data.status] - rank[b.data.status] || a.data.order - b.data.order;
+});
+
+const CATEGORY_LABELS = {
+  road: 'Road Work',
+  industrial: 'Industrial',
+  commercial: 'Commercial',
+  residential: 'Residential',
+  institutional: 'Institutional',
+} as const;
+
+const countBy = (p: (s: string) => boolean) => projects.filter((x) => p(x.data.status)).length;
+const statusFilters = [
+  { value: 'all', label: 'All', count: projects.length },
+  { value: 'completed', label: 'Completed', count: countBy((s) => s === 'completed') },
+  { value: 'ongoing', label: 'In Progress', count: countBy((s) => s === 'ongoing') },
+  { value: 'upcoming', label: 'Upcoming', count: countBy((s) => s === 'upcoming') },
+].filter((f) => f.count > 0);
+
+const usedCategories = [...new Set(projects.map((p) => p.data.category))];
+const categoryFilters = [
+  { value: 'all', label: 'All Types' },
+  ...usedCategories.map((value) => ({ value, label: CATEGORY_LABELS[value] })),
+];
+
+// Structural filter chips: hard-edged, ink-ruled, and a full 44px tall so they
+// stay comfortably tappable on a phone.
+const filterBtn =
+  'inline-flex min-h-11 items-center border border-hairline bg-white px-4 py-2 font-display text-sm font-bold uppercase tracking-wide text-ink-950 transition-colors hover:bg-mist-100 aria-pressed:border-accent-600 aria-pressed:bg-accent-600 aria-pressed:text-white';
+
+// Costs are not published; the built area takes the column instead.
+---
+
+<div data-project-table>
+  <!-- Filters -->
+  <div class="flex flex-col gap-6 border-b border-mist-200 pb-8 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <h2 class="font-display text-xs font-semibold uppercase tracking-[0.2em] text-stone-600">Stage</h2>
+      <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filter by stage">
+        {
+          statusFilters.map((f, i) => (
+            <button type="button" data-filter-status={f.value} aria-pressed={i === 0 ? 'true' : 'false'} class={filterBtn}>
+              {f.label}
+              <span class="ml-1.5 tabular-nums opacity-60">{f.count}</span>
+            </button>
+          ))
+        }
+      </div>
+    </div>
+    <div>
+      <h2 class="font-display text-xs font-semibold uppercase tracking-[0.2em] text-stone-600">Type of work</h2>
+      <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filter by type of work">
+        {
+          categoryFilters.map((f, i) => (
+            <button type="button" data-filter-category={f.value} aria-pressed={i === 0 ? 'true' : 'false'} class={filterBtn}>
+              {f.label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="mt-6 text-sm text-stone-600" role="status" aria-live="polite" data-result-count>
+    Showing all {projects.length} projects.
+  </p>
+
+  <!-- Column header, desktop only -->
+  <div class="mt-6 hidden grid-cols-[1fr_9.5rem_8rem_8rem] items-center gap-6 px-5 pb-3 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-stone-600 lg:grid">
+    <span>Project &amp; Client</span>
+    <span>Area</span>
+    <span>Stage</span>
+    <span class="text-right">Details</span>
+  </div>
+
+  <ul class="border-t border-mist-200" data-rows>
+    {
+      projects.map((project) => {
+        const { title, client, duration, size, status, category } = project.data;
+        const sub = [duration].filter(Boolean).join(' · ');
+        return (
+          <li
+            class="group relative grid grid-cols-1 gap-x-6 gap-y-2 border-b border-mist-200 px-5 py-3 transition-colors duration-200 before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:origin-top before:scale-y-0 before:bg-gradient-to-b before:from-amber-400 before:to-crimson-600 before:transition-transform before:duration-300 before:ease-out-quint hover:bg-mist-50 hover:before:scale-y-100 lg:grid-cols-[1fr_9.5rem_8rem_8rem] lg:items-center"
+            data-project-row
+            data-status={status}
+            data-category={category}
+          >
+            <div class="min-w-0">
+              <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-accent-700">
+                {CATEGORY_LABELS[category]}
+              </p>
+              <h3 class="mt-0.5 font-display text-lg font-bold leading-tight text-ink-950 transition-transform duration-200 ease-out-quint group-hover:translate-x-1">
+                {client ?? title}
+              </h3>
+              <p class="mt-0.5 text-sm leading-snug text-stone-600">{title}</p>
+              {sub && <p class="mt-0.5 font-mono text-xs text-stone-600">{sub}</p>}
+            </div>
+
+            <p class="font-display text-base font-bold leading-snug tabular-nums text-ink-950">
+              {size?.trim() || <span class="font-normal text-stone-600">—</span>}
+            </p>
+
+            <div><StatusChip status={status} /></div>
+
+            <div class="lg:text-right">
+              {/* Stretched link: the whole row is the target, so a click
+                  anywhere opens the project. The visible label stays as the
+                  affordance and its arrow slides on hover. */}
+              <a
+                href={`/projects/${project.id}`}
+                aria-label={client ? `More info: ${client} — ${title}` : `More info: ${title}`}
+                class="inline-flex min-h-11 items-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-accent-700 transition-colors after:absolute after:inset-0 group-hover:text-accent-700"
+              >
+                More Info
+                <Icon name="arrowRight" class="h-4 w-4 transition-transform duration-200 ease-out-quint group-hover:translate-x-1" />
+              </a>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+
+  <p class="mt-10 hidden text-center text-stone-600" data-empty-state>
+    No projects match this combination yet.
+  </p>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-project-table]').forEach((root) => {
+    const rows = Array.from(root.querySelectorAll<HTMLElement>('[data-project-row]'));
+    const statusButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-filter-status]'));
+    const categoryButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-filter-category]'));
+    const resultCount = root.querySelector<HTMLElement>('[data-result-count]');
+    const emptyState = root.querySelector<HTMLElement>('[data-empty-state]');
+    if (!rows.length) return;
+
+    let activeStatus = 'all';
+    let activeCategory = 'all';
+
+    const sync = (buttons: HTMLButtonElement[], key: string, active: string) =>
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[key] === active)));
+
+    const apply = () => {
+      let visible = 0;
+      rows.forEach((row) => {
+        const match =
+          (activeStatus === 'all' || row.dataset.status === activeStatus) &&
+          (activeCategory === 'all' || row.dataset.category === activeCategory);
+        row.hidden = !match;
+        // The row is display:grid, which outranks the [hidden] UA rule, so hide
+        // it explicitly too.
+        row.style.display = match ? '' : 'none';
+        if (match) visible += 1;
+      });
+      if (resultCount) {
+        resultCount.textContent =
+          visible === rows.length
+            ? `Showing all ${rows.length} projects.`
+            : `Showing ${visible} of ${rows.length} projects.`;
+      }
+      emptyState?.classList.toggle('hidden', visible > 0);
+      const params = new URLSearchParams();
+      if (activeStatus !== 'all') params.set('status', activeStatus);
+      if (activeCategory !== 'all') params.set('type', activeCategory);
+      const q = params.toString();
+      history.replaceState(null, '', q ? `?${q}` : location.pathname);
+    };
+
+    statusButtons.forEach((b) =>
+      b.addEventListener('click', () => {
+        activeStatus = b.dataset.filterStatus ?? 'all';
+        sync(statusButtons, 'filterStatus', activeStatus);
+        apply();
+      }),
+    );
+    categoryButtons.forEach((b) =>
+      b.addEventListener('click', () => {
+        activeCategory = b.dataset.filterCategory ?? 'all';
+        sync(categoryButtons, 'filterCategory', activeCategory);
+        apply();
+      }),
+    );
+
+    const params = new URLSearchParams(location.search);
+    const s = params.get('status');
+    const c = params.get('type');
+    if (s && statusButtons.some((b) => b.dataset.filterStatus === s)) {
+      activeStatus = s;
+      sync(statusButtons, 'filterStatus', activeStatus);
+    }
+    if (c && categoryButtons.some((b) => b.dataset.filterCategory === c)) {
+      activeCategory = c;
+      sync(categoryButtons, 'filterCategory', activeCategory);
+    }
+    if (s || c) apply();
+  });
+</script>

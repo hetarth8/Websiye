@@ -1,0 +1,64 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import SectionHeading from './SectionHeading.astro';
+import site from '../data/site.json';
+
+const team = (await getCollection('team')).sort((a, b) => a.data.order - b.data.order);
+// The founder has his own section immediately above this one, so the team
+// grid here is everybody else. Splitting them stops the page introducing
+// the same man twice.
+const rest = team.filter((m) => m.data.division !== 'leadership');
+
+/** Initials stand in until photographs are supplied for the wider team. */
+const initials = (name: string) =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('');
+---
+
+<section id="team" class="section scroll-mt-24 bg-concrete">
+  <div class="container-x">
+    <SectionHeading
+      eyebrow="Our Team"
+      title="Led from the site, not the office"
+      lead={`${site.people.map((p) => `${p.value} ${p.label.toLowerCase()}`).join(' · ')} — with training camps and safety briefings run on site.`}
+    />
+
+    <div class="mt-14">
+      <div>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3" data-reveal-group>
+          {
+            rest.map((member) => (
+              <article
+                class="rounded-2xl bg-mist-50 p-5 ring-1 ring-ink-950/5 transition-all duration-300 hover:-translate-y-1 hover:ring-amber-400"
+                data-reveal
+              >
+                <span
+                  class="grid h-12 w-12 place-items-center bg-accent-50 border border-accent-100 text-accent-600 font-display text-base font-bold text-ink-950 ring-1 ring-ink-950/15"
+                  aria-hidden="true"
+                >
+                  {initials(member.data.name)}
+                </span>
+                <p class="mt-4 font-display text-base font-semibold leading-tight text-ink-950">
+                  {member.data.name}
+                </p>
+                <p class="mt-1 text-xs leading-snug text-stone-600">{member.data.role}</p>
+              </article>
+            ))
+          }
+        </div>
+
+        <div class="mt-8 rounded-2xl border border-dashed border-mist-300 p-6" data-reveal>
+          <p class="text-sm leading-relaxed text-stone-600">
+            AHT Construction invests continuously in the welfare of its people — training camps and
+            safety briefings on site, and recognition for strong performance.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

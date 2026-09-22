@@ -1,0 +1,156 @@
+---
+import { Font } from 'astro:assets';
+import site from '../data/site.json';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MobileActionBar from '../components/MobileActionBar.astro';
+import PageTransition from '../components/PageTransition.astro';
+import StartWindow from '../components/StartWindow.astro';
+import '../styles/global.css';
+import { QUIET_TRANSITIONS } from '../scripts/inline/quiet-transitions.mjs';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Set on the home page only, so inner pages don't compete for the brand term. */
+  isHome?: boolean;
+  /** Keeps internal/utility pages out of search results. */
+  noindex?: boolean;
+}
+
+const { title, description = site.description, isHome = false, noindex = false } = Astro.props;
+
+const pageTitle = isHome ? `${site.legalName} — ${site.tagline}` : `${title} | ${site.name}`;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL('/og-image.jpg', Astro.site).href;
+
+// Structured data. GeneralContractor is the closest schema.org type to a road
+// and civil works firm, and it inherits the LocalBusiness fields that matter
+// for local search around Vapi.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'GeneralContractor',
+  name: site.legalName,
+  alternateName: site.name,
+  description: site.description,
+  url: Astro.site?.href,
+  telephone: site.phone,
+  email: site.email,
+  image: ogImage,
+  founder: {
+    '@type': 'Person',
+    name: site.principal,
+  },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: `${site.address.line1}, ${site.address.line2}`,
+    addressLocality: site.address.city,
+    addressRegion: site.address.state,
+    postalCode: site.address.postalCode,
+    addressCountry: site.address.country,
+  },
+  areaServed: site.areasServed.map((area) => ({ '@type': 'Place', name: area })),
+  knowsAbout: [
+    'Asphalt road construction',
+    'Bituminous surfacing',
+    'RCC civil works',
+    'Industrial infrastructure',
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    {/* viewport-fit=cover lets the page paint behind the Dynamic Island and the
+        home indicator on modern iPhones; global.css then pads content back out
+        of those areas with env(safe-area-inset-*), so nothing is ever clipped. */}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <link rel="icon" type="image/svg+xml" href="/logo/aht-mark.svg" />
+    {/* Matches the page ground. The palette no longer has dark surfaces, so a
+        value that is not the page ground paints a visible bar above it on iOS.
+        Keep this in step with --color-concrete, which is now white. */}
+    <meta name="theme-color" content="#ffffff" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.legalName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="en_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {/* Two families now, not four — the structural and mono variables are gone
+        and their token names are aliased onto these in @theme.
+
+        Preload only the weight each family renders above the fold; preloading
+        every weight would compete with the hero image for bandwidth. Both are
+        variable fonts, so one file per family covers the whole weight range. */}
+    <Font cssVariable="--fontfamily-display" preload={[{ weight: 700, style: 'normal' }]} />
+    <Font cssVariable="--fontfamily-body" preload={[{ weight: 400, style: 'normal' }]} />
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+    {/* Quiets the browser's own View Transition rejections — see the file. */}
+    <script is:inline set:html={QUIET_TRANSITIONS} />
+  </head>
+
+  <body>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-amber-500 focus:px-6 focus:py-3 focus:font-display focus:font-semibold focus:uppercase focus:tracking-wider focus:text-ink-950"
+    >
+      Skip to content
+    </a>
+
+    <div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
+
+    {/* Fine noise over the whole page — see `.grain` in global.css. Purely
+        decorative and never interactive, so it is hidden from assistive tech. */}
+    <div class="grain" aria-hidden="true"></div>
+
+    {isHome && <StartWindow />}
+
+    <PageTransition variant={site.transition as 'sweep' | 'truck' | 'crane' | 'world'} />
+
+    <Header />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+
+    {/* Clears the fixed mobile action bar so the footer's last line is never
+        hidden behind it. Desktop shows no bar, so no spacer. */}
+    <div class="h-[calc(3.5rem+env(safe-area-inset-bottom))] lg:hidden" aria-hidden="true"></div>
+    <MobileActionBar />
+
+    <script>
+      import { initMotion } from '../scripts/motion';
+      import { initTransitions } from '../scripts/transitions';
+      import { initStartWindow } from '../scripts/start';
+      import { initInteractions } from '../scripts/interactions';
+      // No-op on every page that does not render the start window.
+      initStartWindow();
+      initMotion();
+      initTransitions();
+      initInteractions();
+
+      // The 3D scene loads as its own chunk (allowed by `script-src 'self'`), so
+      // the main bundle is unchanged and a phone with data-saver on skips it
+      // entirely. Reduced-motion and slow-device handling live inside it.
+      const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+      if (!conn?.saveData) {
+        import('../scripts/terrain').then((m) => m.initTerrain());
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!--
+  AHT mark — traced directly from the vector paths in the official
+  AHT_visiting_card_and_logo.pdf, not redrawn by eye. Coordinates are the
+  PDF's own, after its Y-flip, so this is the artwork itself.
+
+  Official colours from that file:
+    #F49000  orange   (the A)
+    #9D0F12  crimson  (the strokes and rule)
+    #1B1817  near-black
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 8 110 124" fill="none" role="img" aria-label="AHT Construction">
+  <title>AHT Construction</title>
+
+  <!-- The A, formed as an open triangle -->
+  <path
+    fill="#F49000"
+    fill-rule="evenodd"
+    d="M72.926 12.051 L123.48 103.812 L108.688 103.812
+       C96.766 82.176 84.848 60.539 72.926 38.902
+       L43.812 91.75 L77.543 91.75 L81.176 98.348 L84.191 103.812 L22.371 103.812 Z"
+  />
+
+  <!-- Crimson counter-strokes rising through and past the A -->
+  <path
+    fill="#9D0F12"
+    fill-rule="evenodd"
+    d="M87.191 91.75 L92.578 91.75 L99.227 103.812 L93.836 103.812 Z
+       M72.926 47.793 L117.039 127.945 L114.59 127.945 L71.703 50.016 Z
+       M66.801 58.91 L104.832 127.945 L102.383 127.945 L65.574 61.137 Z"
+  />
+
+  <!-- Baseline rule. In the source it runs the full width of the wordmark;
+       here it is clipped to the mark so the file stands alone. -->
+  <path d="M22.371 110.777 H123.48" stroke="#9D0F12" stroke-width="2.044" />
+</svg>

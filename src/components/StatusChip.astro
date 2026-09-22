@@ -1,0 +1,47 @@
+---
+interface Props {
+  status: 'completed' | 'ongoing' | 'upcoming';
+  class?: string;
+}
+
+const { status, class: className = '' } = Astro.props;
+
+// Status is carried by the label text, never by colour alone — the three
+// variants stay distinguishable to colour-blind and greyscale readers.
+// They also differ in weight, not just hue, so they separate in greyscale:
+// solid dark-value, solid bright, and light-with-outline.
+//
+// `completed` was a near-black chip. With black removed from the palette it is
+// now solid crimson, which is the darkest VALUE the brand owns and so keeps the
+// same greyscale separation from amber that the black chip had.
+//
+// Contrast, recomputed 2026-09-11: white on crimson-600 8.36:1,
+// ink-950 on amber-500 7.43:1 (previously documented here as 8.5:1 — wrong),
+// amber-800 on amber-100 7.25:1. All AAA at this size.
+//
+// The `upcoming` chip's OUTLINE was `ring-amber-300` on `bg-amber-100`, which
+// measures 1.47:1 — far below the 3:1 that WCAG 1.4.11 requires of a non-text
+// boundary, so the chip's edge was effectively invisible. It now uses the same
+// hard ink rule as the rest of the system, at 15.41:1.
+const STYLES = {
+  completed: 'bg-accent-700 text-white',
+  ongoing: 'bg-accent-50 border border-accent-100 text-accent-600',
+  upcoming: 'bg-mist-100 text-ink-800 border border-hairline',
+} as const;
+
+const LABELS = {
+  completed: 'Completed',
+  ongoing: 'In Progress',
+  upcoming: 'Upcoming',
+} as const;
+---
+
+<span
+  class:list={[
+    'inline-flex items-center px-3 py-1 font-display text-xs font-semibold uppercase tracking-[0.14em]',
+    STYLES[status],
+    className,
+  ]}
+>
+  {LABELS[status]}
+</span>

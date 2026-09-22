@@ -1,0 +1,173 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import site from '../data/site.json';
+import Icon from './Icon.astro';
+import backdrop from '../assets/machinery/asphalt-batch-mix-plant.jpg';
+
+// The hero no longer leans on the weak photography — one heavily-darkened plant
+// image is texture, and the type, the brand ramp and the proof row carry it.
+// The four figures are the numbers a procurement buyer benchmarks in the first
+// three seconds; all are real and verified.
+/**
+ * The four figures a procurement buyer benchmarks in the first three seconds.
+ *
+ * The headline is now the COMBINED total: road work orders plus the building
+ * work. It is computed the same way as in ProofOfDelivery, and for the same
+ * reason — road-category projects are excluded because they are already inside
+ * the road work order count, and adding them would count them twice. Derived
+ * rather than typed, so it cannot drift from the proof section.
+ */
+const allProjects = await getCollection('projects');
+const roadStat = site.stats.find((x) => x.label === 'Road work completed');
+const roadOrders = Number((roadStat?.value ?? '0').replace(/[^0-9]/g, ''));
+const buildingCount = allProjects.filter((p) => p.data.category !== 'road').length;
+const totalWorks = roadOrders + buildingCount;
+
+const proof = [
+  { value: `${totalWorks}+`, label: 'Projects completed' },
+  { value: '2,180+ km', label: 'Roads laid since 2001' },
+  { value: '40+ lakh', label: 'Sq.ft. industrial built' },
+  { value: '300+', label: 'Engineers on staff' },
+];
+
+// Headline client names, curated for recognition. Kept in sync conceptually
+// with the full trophy wall further down the page.
+const clients = ['Welspun', 'Polycab', 'Toray', 'Sun Pharma', 'UPL'];
+
+const years = new Date().getFullYear() - site.founded;
+---
+
+<section class="relative isolate overflow-hidden bg-concrete">
+  <!-- Backdrop.
+       The palette moved off dark grounds entirely, so this image can no longer
+       be a darkened plate with white type over it. It is now a PALE plate: the
+       photograph sits well back at low opacity under a concrete wash, and the
+       type on top is ink. The wash is weighted to the left, where the copy is,
+       so the headline always clears contrast no matter what the photograph is
+       doing behind it. Decorative — the headline carries the meaning — so it is
+       hidden from assistive tech. -->
+  <div class="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+    <div class="absolute inset-x-0 -inset-y-[25%]" data-parallax="0.2">
+      <Image
+        src={backdrop}
+        alt=""
+        widths={[900, 1400, 1920]}
+        sizes="100vw"
+        quality={80}
+        class="hero-zoom h-full w-full object-cover object-center opacity-[0.18]"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+    <!-- Concrete wash, heaviest on the left under the copy. -->
+    <div class="absolute inset-0 bg-gradient-to-r from-concrete via-concrete/92 to-concrete/60"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-concrete via-transparent to-concrete/70"></div>
+    <div class="blueprint-grid-ink absolute inset-0 opacity-45"></div>
+
+    {/* The 3D scene — a wireframe terrain the highway runs through, rising into
+        wireframe towers at the horizon. Weighted to the right half; a CSS mask
+        makes it fully transparent under the copy so the headline never has a
+        line behind it. Drawn by src/scripts/terrain.ts. */}
+    <canvas class="terrain terrain--hero" data-terrain="hero" aria-hidden="true"></canvas>
+
+    {/* A slow diagonal light ray sweeping the scene, and three drifting rings
+        in the margins echoing the welcome dial. Pure CSS, frozen under
+        prefers-reduced-motion by the global rule. */}
+    <div class="beam beam--light" aria-hidden="true"></div>
+    <div class="orbits orbits--hero" aria-hidden="true">
+      <span class="orbit orbit--dial"></span>
+      <span class="orbit orbit--glass"></span>
+      <span class="orbit"></span>
+    </div>
+  </div>
+
+  <!-- Hatch corner mark — a drawn engineering flourish. -->
+  <div class="hatch float-soft pointer-events-none absolute right-0 top-0 -z-10 h-40 w-40 opacity-90 md:h-64 md:w-64" aria-hidden="true"></div>
+
+  <div class="container-x relative flex min-h-[92svh] flex-col justify-center pb-40 pt-32 md:pb-44 md:pt-40">
+    <div class="max-w-4xl">
+      <p class="index-label">
+        Est. {site.founded} &nbsp;&middot;&nbsp; Vapi &middot; Daman &middot; Silvassa
+      </p>
+
+      <h1 class="statement mt-7 text-ink-950" data-split>
+        Highway to <span class="text-aurora">Highrise.</span>
+      </h1>
+
+      <p class="mt-7 max-w-xl text-lg leading-relaxed text-stone-700">
+        {years} years of roads, industrial plants, commercial towers and homes — built with our
+        own quarries, concrete and crews across South Gujarat, Daman and Silvassa.
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+        <a href="/#contact" class="btn btn-primary magnetic">
+          Get a project estimate
+          <Icon name="arrowRight" class="h-5 w-5" />
+        </a>
+        <a
+          href="/projects"
+          class="font-mono text-xs uppercase tracking-[0.24em] text-ink-950 underline-offset-8 transition-colors hover:text-accent-700 hover:underline"
+        >
+          View projects
+        </a>
+      </div>
+
+      <p class="mt-10 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-stone-600">
+        <span class="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-steel-700">Delivered for</span>
+        {
+          clients.map((c, i) => (
+            <>
+              {i > 0 && <span aria-hidden="true" class="text-ink-950/45">·</span>}
+              <span class="font-display font-semibold tracking-wide text-ink-950/85">{c}</span>
+            </>
+          ))
+        }
+      </p>
+    </div>
+  </div>
+
+  <!-- Proof bar, docked to the bottom edge. Mono figures, not boxed tiles. -->
+  <div class="absolute inset-x-0 bottom-0 z-10 border-t border-hairline bg-concrete/85 backdrop-blur">
+    <div class="container-x">
+      <dl class="grid grid-cols-2 divide-ink-950/15 md:grid-cols-4 md:divide-x">
+        {
+          proof.map((p, i) => (
+            <div class:list={['py-5 md:py-6 md:px-6', i === 0 && 'md:pl-0']}>
+              <dt class="font-display text-2xl font-bold tabular-nums text-ink-950 sm:text-3xl">
+                {p.value}
+              </dt>
+              <dd class="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-stone-600">
+                {p.label}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Slow, subtle Ken-Burns push on the backdrop — atmosphere, not spectacle.
+     Suppressed for anyone who has asked for less motion. */
+  .hero-zoom {
+    animation: hero-zoom 22s ease-out forwards;
+    transform-origin: 60% 40%;
+  }
+
+  @keyframes hero-zoom {
+    from {
+      transform: scale(1.12);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-zoom {
+      animation: none;
+    }
+  }
+</style>

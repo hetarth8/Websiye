@@ -1,0 +1,67 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+
+const all = (await getCollection('clients'))
+  .filter((c) => c.data.logo)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const corporate = all.filter((c) => c.data.sector === 'corporate');
+const government = all.filter((c) => c.data.sector === 'government');
+
+const groups = [
+  { label: 'Corporate & industrial', items: corporate },
+  { label: 'Government & civic', items: government },
+].filter((g) => g.items.length > 0);
+---
+
+<!-- A static trophy wall, not a fading marquee. These names are the strongest
+     thing on the page for a procurement buyer, so they are shown at full weight
+     in bordered tiles they can stop and read. -->
+<section
+  id="clients"
+  class="scroll-mt-24 border-y border-mist-200 bg-concrete py-16 md:py-20"
+  aria-labelledby="clients-heading"
+>
+  <div class="container-x">
+    <div class="title-block" data-reveal>
+      <div class="title-block__bar">
+        <span>Trusted by</span>
+        <span class="title-block__meta">{all.length} clients</span>
+      </div>
+      <h2 id="clients-heading" class="title-block__title mt-6 max-w-3xl">
+        The companies and councils that award us the work
+      </h2>
+    </div>
+
+    {
+      groups.map((group) => (
+        <div class="mt-12 first:mt-10">
+          <p class="font-mono text-[0.72rem] uppercase tracking-[0.16em] text-accent-700">
+            {group.label}
+          </p>
+          <ul
+            class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-5"
+            data-reveal-group
+          >
+            {group.items.map((client) => (
+              <li
+                class="card grid min-h-[92px] place-items-center p-5 transition-all duration-300 hover:-translate-y-1 md:min-h-[104px]"
+                data-reveal
+              >
+                <Image
+                  src={client.data.logo!}
+                  alt={client.data.name}
+                  widths={[160, 320]}
+                  sizes="180px"
+                  class="max-h-11 w-auto max-w-[150px] object-contain md:max-h-12"
+                  loading="lazy"
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</section>

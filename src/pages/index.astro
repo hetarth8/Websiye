@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import CredentialRibbon from '../components/CredentialRibbon.astro';
+import ByTheNumbers from '../components/ByTheNumbers.astro';
+import ClientMarquee from '../components/ClientMarquee.astro';
+import ContactStrip from '../components/ContactStrip.astro';
+import Divisions from '../components/Divisions.astro';
+import Statement from '../components/Statement.astro';
+import Facilities from '../components/Facilities.astro';
+import Equipment from '../components/Equipment.astro';
+import FeaturedProjects from '../components/FeaturedProjects.astro';
+import Government from '../components/Government.astro';
+import Credentials from '../components/Credentials.astro';
+import VideoProcess from '../components/VideoProcess.astro';
+import Faq from '../components/Faq.astro';
+import Contact from '../components/Contact.astro';
+import ProofOfDelivery from '../components/ProofOfDelivery.astro';
+import Founder from '../components/Founder.astro';
+import OrgTree from '../components/OrgTree.astro';
+import SectionIndex from '../components/SectionIndex.astro';
+import WorldStrip from '../components/WorldStrip.astro';
+
+// Drives the fixed section rail. Ids must match the section elements below.
+const sections = [
+  { id: 'about', label: 'Record' },
+  { id: 'founder', label: 'Founder' },
+  { id: 'org', label: 'Organisation' },
+  { id: 'services', label: 'Divisions' },
+  { id: 'fleet', label: 'Plant' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'proof', label: 'Proof' },
+  { id: 'government', label: 'Public Works' },
+  { id: 'credentials', label: 'Credentials' },
+  { id: 'contact', label: 'Contact' },
+];
+---
+
+{/*
+  Order is an argument, not a checklist:
+    the record → who runs it → who trusts us → what we do → [statement] →
+    what we own → what we have built → proof → public works → credentials →
+    how it runs → the people → questions → talk to us.
+
+  THIS ORDER IS THE OWNER'S AND IS FIXED. A redesign pass once reordered it
+  (and added a sectors section); the owner had it restored exactly: "Do NOT
+  reorder pages, sections, navigation items, or information." Style may
+  change; the sequence and the information may not.
+
+  The organisation tree sits third, immediately after the headline figures.
+  A buyer weighing a contractor asks "can this firm actually carry my job"
+  before "what does their work look like", and a named person answerable for
+  each function answers that faster than another photograph does.
+
+  GROUND RHYTHM — no two neighbouring sections share a ground. If you insert
+  a section, re-check the whole sequence rather than only its neighbours.
+
+  WORLD STRIPS — the four <WorldStrip> interludes are not sections and carry
+  their own neutral ground, so they sit outside the rhythm above. They are in
+  journey order through the city: homes, the resort, the highway, the skyline.
+*/}
+<BaseLayout title="Home" isHome>
+  <SectionIndex sections={sections} />
+  <Hero />
+  <CredentialRibbon />
+  <ByTheNumbers />
+  <Founder />
+  <OrgTree />
+  <WorldStrip district="residential" />
+  <ClientMarquee />
+  <Divisions />
+  <Statement />
+  <Facilities />
+  <Equipment />
+  <WorldStrip district="resort" />
+  <FeaturedProjects />
+  <ProofOfDelivery />
+  <WorldStrip district="highway" />
+  <Government />
+  <Credentials />
+  <ContactStrip />
+  <VideoProcess />
+  <Faq />
+  <WorldStrip district="skyline" />
+  <Contact />
+</BaseLayout>

@@ -1,0 +1,89 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import SectionHeading from './SectionHeading.astro';
+import Icon from './Icon.astro';
+
+const facilities = (await getCollection('facilities')).sort((a, b) => a.data.order - b.data.order);
+
+const KIND_LABEL = {
+  quarry: 'Quarry',
+  rmc: 'Ready-Mix Concrete',
+  asphalt: 'Asphalt Drum Mix',
+} as const;
+---
+
+<section id="fleet" class="scroll-mt-24 bg-sand py-20 md:py-28">
+  <div class="container-x">
+    <SectionHeading
+      eyebrow="Capabilities"
+      title="We own what we build with"
+      lead="Three quarries, three ready-mix plants and two asphalt drum mix plants. Material, mix and machines come from inside the company — which is what lets us hold a programme."
+    />
+
+    <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
+      {
+        facilities.map((item) => (
+          <article
+            class="card group flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1.5"
+            data-reveal
+          >
+            {item.data.image && (
+              <div class="img-frame img-shade aspect-[16/10]">
+                <Image
+                  src={item.data.image}
+                  alt={item.data.name}
+                  widths={[400, 640, 900]}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 92vw"
+                  quality={85}
+                  loading="lazy"
+                />
+                <span class="absolute left-4 top-4 z-10 bg-accent-50 border border-accent-100 text-accent-600 px-3 py-1 font-display text-xs font-semibold uppercase tracking-[0.12em] text-ink-950">
+                  {KIND_LABEL[item.data.kind]}
+                </span>
+              </div>
+            )}
+
+            <div class="flex flex-1 flex-col p-6">
+              <h3 class="title-plain text-xl text-ink-950">{item.data.name}</h3>
+
+              {item.data.location && (
+                <p class="mt-1.5 flex items-center gap-1.5 text-sm text-stone-700">
+                  <Icon name="pin" class="h-4 w-4 shrink-0 text-accent-600" />
+                  {item.data.location}
+                </p>
+              )}
+
+              {item.data.notes && (
+                <p class="mt-4 text-sm leading-relaxed text-stone-700">{item.data.notes}</p>
+              )}
+
+              <div class="mt-auto flex flex-wrap items-end gap-x-6 gap-y-2 pt-6">
+                {item.data.capacity && (
+                  <p>
+                    <span class="block font-display text-3xl font-bold leading-none text-gradient">
+                      {item.data.capacity}
+                    </span>
+                    <span class="mt-1 block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-stone-700">
+                      Capacity
+                    </span>
+                  </p>
+                )}
+                {item.data.established && (
+                  <p>
+                    <span class="block font-display text-3xl font-bold leading-none text-ink-950">
+                      {item.data.established}
+                    </span>
+                    <span class="mt-1 block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-stone-700">
+                      Since
+                    </span>
+                  </p>
+                )}
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
