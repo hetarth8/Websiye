@@ -1,5 +1,9 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
+/** A form post, not an upload: anything larger is refused unread. */
+const MAX_BODY = 16 * 1024;
+const MAX_FIELD = 4000;
+
 interface EnquiryPayload {
   name?: string;
   phone?: string;
@@ -24,7 +28,14 @@ export default async function handler(
     let body = req.body;
     if (!body || typeof body !== 'object') {
       const buffers: Buffer[] = [];
+      let size = 0;
       for await (const chunk of req) {
+        size += chunk.length;
+        if (size > MAX_BODY) {
+          res.statusCode = 413;
+          res.end();
+          return;
+        }
         buffers.push(chunk);
       }
       const raw = Buffer.concat(buffers).toString('utf-8');
@@ -49,6 +60,25 @@ export default async function handler(
       botField: body['bot-field'],
     };
 
+    const wantsJson = (req.headers.accept || '').includes('application/json');
+
+    // Every field the form marks required, and nothing longer than a form can
+    // sensibly hold. An invalid post is answered, not stored.
+    const missing = (['name', 'phone', 'message'] as const).filter((k) => !payload[k]?.trim());
+    const tooLong = Object.values(payload).some((v) => typeof v === 'string' && v.length > MAX_FIELD);
+    if (missing.length || tooLong) {
+      if (wantsJson) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: missing.length ? `Missing: ${missing.join(', ')}` : 'Field too long' }));
+        return;
+      }
+      res.statusCode = 303;
+      res.setHeader('Location', '/#contact');
+      res.end();
+      return;
+    }
+
     // Bot honeypot check
     if (payload.botField) {
       console.warn('[Enquiry] Bot detected via honeypot field');
@@ -68,8 +98,7 @@ export default async function handler(
       receivedAt: new Date().toISOString(),
     });
 
-    const acceptsJson = (req.headers.accept || '').includes('application/json');
-    if (acceptsJson) {
+    if (wantsJson) {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ success: true, message: 'Enquiry received successfully' }));
