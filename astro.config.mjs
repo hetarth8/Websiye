@@ -30,6 +30,32 @@ const SITE =
  * public/admin/decap/ during Astro's config setup phase. This eliminates any
  * dependency on npm postinstall or prebuild hooks that can fail in CI/CD environments.
  */
+/**
+ * Generates public/_headers from netlify.toml during config setup.
+ *
+ * The file is gitignored (it is generated), so a fresh clone — a Vercel build,
+ * a Netlify build from git, anyone who clones the repo — had no _headers at
+ * all, and a site published from that build carried none of the security
+ * headers. Emitting it here means it can never be missing again, for the same
+ * reason the CMS bundle is copied here: no npm pre/post hooks to forget.
+ * On Vercel the headers also come from vercel.json; this costs nothing there.
+ */
+function headersIntegration() {
+  return {
+    name: 'emit-headers',
+    hooks: {
+      'astro:config:setup': async () => {
+        try {
+          await import('./scripts/emit-headers.mjs');
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          console.warn('[headers] could not generate public/_headers:', message);
+        }
+      },
+    },
+  };
+}
+
 function decapCmsIntegration() {
   return {
     name: 'decap-cms-bundle',
@@ -178,7 +204,7 @@ export default defineConfig({
     },
   ],
 
-  integrations: [
+  integrations: [headersIntegration(), 
     decapCmsIntegration(),
     sitemap({
       // /thank-you is a form destination, /admin is the CMS and

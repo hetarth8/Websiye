@@ -6,6 +6,9 @@ import SectionHeading from './SectionHeading.astro';
 const whatsappHref = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(site.whatsappMessage)}`;
 const directionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.mapQuery)}`;
 
+// Vercel sets VERCEL=1 in its build; Netlify does not. See the form below.
+const onVercel = Boolean(process.env.VERCEL);
+
 const projectTypes = [
   'Asphalt road work',
   'Civil / RCC works',
@@ -115,13 +118,20 @@ const cardLabelClass =
           Fields marked <span class="font-semibold text-crimson-600">*</span> are required.
         </p>
 
+        {/*
+          Where the form posts depends on who is hosting it, decided at build
+          time. On Vercel it is the serverless function in /api; on Netlify (or
+          a dragged-and-dropped dist) it is Netlify Forms, which needs the
+          data-netlify attributes and a POST to a real page. Wiring both at once
+          breaks one of them: a Netlify site has no /api/enquiry, and Netlify
+          Forms never sees a submission that goes there.
+        */}
         <form
           name="enquiry"
           data-enquiry
           method="POST"
-          action="/api/enquiry"
-          data-netlify="true"
-          data-netlify-honeypot="bot-field"
+          action={onVercel ? '/api/enquiry' : '/thank-you'}
+          {...(onVercel ? {} : { 'data-netlify': 'true', 'data-netlify-honeypot': 'bot-field' })}
           class="mt-7 space-y-5"
         >
           <!-- Netlify needs the form name echoed in the body of the POST. -->
@@ -211,6 +221,10 @@ const cardLabelClass =
             <p id="message-error" class="field-error" hidden>Please tell us a little about the work.</p>
           </div>
 
+          <p class="field-error" hidden data-form-error role="alert">
+            That did not send. Please try again, or call or WhatsApp us — the numbers are beside this form.
+          </p>
+
           <button type="submit" class="btn btn-primary magnetic w-full">
             Send Enquiry
             <Icon name="arrowRight" class="h-5 w-5" />
@@ -260,17 +274,37 @@ const cardLabelClass =
         submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
       }
 
+      /*
+       * Sent as form-urlencoded, which is what BOTH receivers expect: Netlify
+       * Forms records an AJAX submission in that shape, and the Vercel
+       * function in /api parses it. A FormData body goes out as multipart,
+       * which Netlify does not reliably record — the enquiry would vanish.
+       */
+      const data = new FormData(form);
+      const body = new URLSearchParams();
+      data.forEach((value, key) => {
+        if (typeof value === 'string') body.append(key, value);
+      });
+
+      const failed = form.querySelector<HTMLElement>('[data-form-error]');
+      if (failed) failed.hidden = true;
+
       try {
-        const formData = new FormData(form);
-        await fetch(form.action || '/api/enquiry', {
+        const res = await fetch(form.action, {
           method: 'POST',
-          body: formData,
-          headers: { Accept: 'application/json' },
+          body,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
         });
-      } catch (err) {
-        console.warn('Form submission fetch error:', err);
-      } finally {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         window.location.href = '/thank-you';
+      } catch (err) {
+        // Never claim an enquiry arrived when it did not.
+        console.warn('Enquiry could not be sent:', err);
+        if (failed) failed.hidden = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
       }
     });
     fields.forEach((f) =>
