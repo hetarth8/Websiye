@@ -994,11 +994,14 @@ class Scene {
 
     // A backdrop is pinned to the viewport while its section scrolls past, so a
     // tall section shows a whole city — skyline, streets, horizon — instead of
-    // one long strip of road stretched down 2,500px. Only an animated one, and
-    // only with a mouse: a touch fling is scrolled by the compositor, frames
-    // ahead of any redraw, so on a phone the words would outrun their clearing.
+    // one long strip of road stretched down 2,500px. It is also what keeps a
+    // canvas to ONE SCREEN: a section-tall bitmap on a phone reached 585x5314
+    // (12 MB), and iOS kills a tab that holds a few of those. Pinning is safe
+    // on a touch screen now that the clearing under the words is a CSS mask on
+    // the section itself (see cssMask), which the compositor moves with the
+    // words; it used to be cut into the canvas, a frame or more behind them.
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    this.pinned = mode === 'backdrop' && !this.isStatic && fine;
+    this.pinned = mode === 'backdrop' && !this.isStatic;
     this.holdStill = mode === 'backdrop' && !this.pinned;
     if (this.pinned) canvas.classList.add('is-pinned');
 

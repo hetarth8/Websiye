@@ -92,8 +92,8 @@ export class SceneRenderer {
   size(w: number, h: number): void {
     if (!w || !h) {
       this.pending = null;
-      this.canvas.width = 0;
-      this.canvas.height = 0;
+      this.canvas.width = 1;
+      this.canvas.height = 1;
       this.hostMask = null;
       this.anchorMasks = [];
       return;
